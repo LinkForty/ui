@@ -34,22 +34,22 @@ export function LinkTable({ links, onEdit, onDelete, baseUrl = window.location.o
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                 Link
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3">
                 Destination
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
                 Clicks
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                 Created
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                 Status
               </th>
-              <th className="relative px-6 py-3">
+              <th className="relative px-4 py-3 w-24">
                 <span className="sr-only">Actions</span>
               </th>
             </tr>
@@ -57,47 +57,47 @@ export function LinkTable({ links, onEdit, onDelete, baseUrl = window.location.o
           <tbody className="bg-white divide-y divide-gray-200">
             {links.map((link) => (
               <tr key={link.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center space-x-2">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium text-gray-900 truncate">
                         {link.title || 'Untitled'}
                       </div>
-                      <div className="text-sm text-blue-600 font-mono">
+                      <div className="text-xs text-blue-600 font-mono truncate">
                         {getShortUrl(link.short_code)}
                       </div>
                     </div>
                     <button
                       onClick={() => handleCopyLink(link.short_code)}
-                      className="text-gray-400 hover:text-gray-600"
+                      className="text-gray-400 hover:text-gray-600 flex-shrink-0"
                       title="Copy link"
                     >
                       <Copy className="h-4 w-4" />
                     </button>
                     {copiedLink === link.short_code && (
-                      <span className="text-xs text-green-600">Copied!</span>
+                      <span className="text-xs text-green-600 flex-shrink-0">Copied!</span>
                     )}
                   </div>
                 </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900 max-w-xs truncate">
+                <td className="px-4 py-3">
+                  <div className="text-sm text-gray-900 truncate">
                     {link.original_url}
                   </div>
                   {link.description && (
-                    <div className="text-sm text-gray-500 max-w-xs truncate">
+                    <div className="text-xs text-gray-500 truncate">
                       {link.description}
                     </div>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                   {link.click_count || 0}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-500">
                   {format(new Date(link.created_at), 'MMM d, yyyy')}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-4 py-3 whitespace-nowrap">
                   <div className="flex flex-col gap-1">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${
                       link.is_active
                         ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
@@ -108,7 +108,7 @@ export function LinkTable({ links, onEdit, onDelete, baseUrl = window.location.o
                       ((link.targeting_rules.countries && link.targeting_rules.countries.length > 0) ||
                        (link.targeting_rules.devices && link.targeting_rules.devices.length > 0) ||
                        (link.targeting_rules.languages && link.targeting_rules.languages.length > 0)) && (
-                        <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+                        <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
                           <Target className="h-3 w-3 mr-1" />
                           Targeted
                         </span>
@@ -116,8 +116,8 @@ export function LinkTable({ links, onEdit, onDelete, baseUrl = window.location.o
                     )}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex items-center space-x-2">
+                <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                  <div className="flex items-center justify-end gap-2">
                     <a
                       href={getShortUrl(link.short_code)}
                       target="_blank"
