@@ -10,6 +10,11 @@ export interface Link {
   web_fallback_url?: string;
   utmParameters?: UTMParameters;
   targeting_rules?: TargetingRules;
+  og_title?: string;
+  og_description?: string;
+  og_image_url?: string;
+  og_type?: string;
+  attribution_window_hours?: number;
   is_active: boolean;
   expires_at?: string;
   created_at: string;
@@ -40,6 +45,11 @@ export interface CreateLinkRequest {
   webFallbackUrl?: string;
   utmParameters?: UTMParameters;
   targetingRules?: TargetingRules;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImageUrl?: string;
+  ogType?: string;
+  attributionWindowHours?: number;
   customCode?: string;
   expiresAt?: string;
 }

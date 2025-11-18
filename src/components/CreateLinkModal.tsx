@@ -18,6 +18,15 @@ const createLinkSchema = z.object({
     .max(50, 'Custom code must be less than 50 characters')
     .optional()
     .or(z.literal('')),
+  ogTitle: z.string().max(255, 'OG title must be less than 255 characters').optional(),
+  ogDescription: z.string().max(1000, 'OG description must be less than 1000 characters').optional(),
+  ogImageUrl: z.string().url('Please enter a valid image URL').optional().or(z.literal('')),
+  ogType: z.string().max(50, 'OG type too long').optional(),
+  attributionWindowHours: z.number()
+    .int('Attribution window must be a whole number')
+    .min(1, 'Attribution window must be at least 1 hour')
+    .max(2160, 'Attribution window must be at most 2160 hours (90 days)')
+    .optional(),
   utmSource: z.string().max(255, 'UTM source too long').optional(),
   utmMedium: z.string().max(255, 'UTM medium too long').optional(),
   utmCampaign: z.string().max(255, 'UTM campaign too long').optional(),
@@ -90,6 +99,11 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading }: Create
       androidUrl: data.androidUrl || undefined,
       webFallbackUrl: data.webFallbackUrl || undefined,
       customCode: data.customCode,
+      ogTitle: data.ogTitle,
+      ogDescription: data.ogDescription,
+      ogImageUrl: data.ogImageUrl || undefined,
+      ogType: data.ogType,
+      attributionWindowHours: data.attributionWindowHours,
       utmParameters: {
         source: data.utmSource,
         medium: data.utmMedium,
@@ -274,6 +288,76 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading }: Create
                   )}
                 </div>
 
+                <h4 className="text-md font-medium text-gray-900">Social Media Preview (Open Graph)</h4>
+                <p className="text-sm text-gray-500 -mt-2">
+                  Customize how your link appears when shared on Facebook, Twitter, LinkedIn, etc.
+                </p>
+
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      OG Title
+                    </label>
+                    <input
+                      {...register('ogTitle')}
+                      type="text"
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Leave empty to use link title"
+                    />
+                    {errors.ogTitle && (
+                      <p className="mt-1 text-sm text-red-600">{errors.ogTitle.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      OG Type
+                    </label>
+                    <select
+                      {...register('ogType')}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    >
+                      <option value="website">Website</option>
+                      <option value="article">Article</option>
+                      <option value="product">Product</option>
+                      <option value="video">Video</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    OG Description
+                  </label>
+                  <textarea
+                    {...register('ogDescription')}
+                    rows={2}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="Leave empty to use link description"
+                  />
+                  {errors.ogDescription && (
+                    <p className="mt-1 text-sm text-red-600">{errors.ogDescription.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    OG Image URL
+                  </label>
+                  <input
+                    {...register('ogImageUrl')}
+                    type="url"
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="https://example.com/image.png"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Recommended: 1200x630px for best results on all platforms
+                  </p>
+                  {errors.ogImageUrl && (
+                    <p className="mt-1 text-sm text-red-600">{errors.ogImageUrl.message}</p>
+                  )}
+                </div>
+
                 <h4 className="text-md font-medium text-gray-900">UTM Parameters</h4>
 
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -336,6 +420,35 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading }: Create
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     placeholder="banner_ad, text_link"
                   />
+                </div>
+
+                <h4 className="text-md font-medium text-gray-900 pt-6">Attribution Window</h4>
+                <p className="text-sm text-gray-500 -mt-2">
+                  Configure how long after a click an app install can be attributed to this link
+                </p>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Attribution Window (hours)
+                  </label>
+                  <select
+                    {...register('attributionWindowHours', { valueAsNumber: true })}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  >
+                    <option value={1}>1 hour</option>
+                    <option value={24}>24 hours (1 day)</option>
+                    <option value={72}>72 hours (3 days)</option>
+                    <option value={168}>168 hours (7 days) - Default</option>
+                    <option value={336}>336 hours (14 days)</option>
+                    <option value={720}>720 hours (30 days)</option>
+                    <option value={2160}>2160 hours (90 days)</option>
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Clicks older than this window won't be matched to installs. Default: 7 days
+                  </p>
+                  {errors.attributionWindowHours && (
+                    <p className="mt-1 text-sm text-red-600">{errors.attributionWindowHours.message}</p>
+                  )}
                 </div>
 
                 <h4 className="text-md font-medium text-gray-900 pt-6">Targeting Rules</h4>

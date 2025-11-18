@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { Link } from '../types';
-import { Copy, ExternalLink, Edit, Trash2, Target } from 'lucide-react';
+import { Copy, ExternalLink, Edit, Trash2, Target, QrCode } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface LinkTableProps {
   links: Link[];
   onEdit: (link: Link) => void;
   onDelete: (linkId: string) => void;
+  onViewQRCode?: (link: Link) => void;
   baseUrl?: string;
 }
 
-export function LinkTable({ links, onEdit, onDelete, baseUrl = window.location.origin }: LinkTableProps) {
+export function LinkTable({ links, onEdit, onDelete, onViewQRCode, baseUrl = window.location.origin }: LinkTableProps) {
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
 
   const handleCopyLink = async (short_code: string) => {
@@ -127,6 +128,15 @@ export function LinkTable({ links, onEdit, onDelete, baseUrl = window.location.o
                     >
                       <ExternalLink className="h-4 w-4" />
                     </a>
+                    {onViewQRCode && (
+                      <button
+                        onClick={() => onViewQRCode(link)}
+                        className="text-gray-400 hover:text-gray-600"
+                        title="View QR Code"
+                      >
+                        <QrCode className="h-4 w-4" />
+                      </button>
+                    )}
                     <button
                       onClick={() => onEdit(link)}
                       className="text-gray-400 hover:text-gray-600"
