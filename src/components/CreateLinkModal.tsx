@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { X } from 'lucide-react';
-import { CreateLinkRequest } from '../types';
+import { CreateLinkRequest, LinkTemplate } from '../types';
 
 const createLinkSchema = z.object({
+  templateId: z.string().min(1, 'Template is required'),
   originalUrl: z.string().min(1, 'URL is required').url('Please enter a valid URL'),
   title: z.string().max(255, 'Title must be less than 255 characters').optional(),
   description: z.string().max(1000, 'Description must be less than 1000 characters').optional(),
@@ -44,6 +45,7 @@ interface CreateLinkModalProps {
   onClose: () => void;
   onSubmit: (data: CreateLinkRequest) => Promise<void>;
   isLoading?: boolean;
+  templates: LinkTemplate[];
 }
 
 const COUNTRY_OPTIONS = [
@@ -75,7 +77,7 @@ const LANGUAGE_OPTIONS = [
   { code: 'hi', name: 'Hindi' },
 ];
 
-export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading }: CreateLinkModalProps) {
+export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading, templates }: CreateLinkModalProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [selectedDevices, setSelectedDevices] = useState<('ios' | 'android' | 'web')[]>([]);
@@ -85,13 +87,67 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading }: Create
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<CreateLinkFormData>({
     resolver: zodResolver(createLinkSchema),
   });
 
+  // Watch for template selection changes
+  const selectedTemplateId = watch('templateId');
+
+  // Apply template defaults when template is selected
+  useEffect(() => {
+    if (!selectedTemplateId) return;
+
+    const template = templates.find(t => t.id === selectedTemplateId);
+    if (!template || !template.settings) return;
+
+    const { settings } = template;
+
+    // Apply platform URLs from template if not already filled
+    if (settings.defaultIosUrl) {
+      setValue('iosUrl', settings.defaultIosUrl);
+    }
+    if (settings.defaultAndroidUrl) {
+      setValue('androidUrl', settings.defaultAndroidUrl);
+    }
+    if (settings.defaultWebFallbackUrl) {
+      setValue('webFallbackUrl', settings.defaultWebFallbackUrl);
+    }
+
+    // Apply attribution window from template
+    if (settings.defaultAttributionWindowHours) {
+      setValue('attributionWindowHours', settings.defaultAttributionWindowHours);
+    }
+
+    // Apply UTM parameters from template
+    if (settings.utmParameters) {
+      if (settings.utmParameters.source) setValue('utmSource', settings.utmParameters.source);
+      if (settings.utmParameters.medium) setValue('utmMedium', settings.utmParameters.medium);
+      if (settings.utmParameters.campaign) setValue('utmCampaign', settings.utmParameters.campaign);
+      if (settings.utmParameters.term) setValue('utmTerm', settings.utmParameters.term);
+      if (settings.utmParameters.content) setValue('utmContent', settings.utmParameters.content);
+    }
+
+    // Apply targeting rules from template
+    if (settings.targetingRules) {
+      if (settings.targetingRules.countries) {
+        setSelectedCountries(settings.targetingRules.countries);
+      }
+      if (settings.targetingRules.devices) {
+        setSelectedDevices(settings.targetingRules.devices);
+      }
+      if (settings.targetingRules.languages) {
+        setSelectedLanguages(settings.targetingRules.languages);
+      }
+    }
+  }, [selectedTemplateId, templates, setValue]);
+
   const handleFormSubmit = async (data: CreateLinkFormData) => {
     const linkData: CreateLinkRequest = {
+      templateId: data.templateId,
       originalUrl: data.originalUrl,
       title: data.title,
       description: data.description,
@@ -171,6 +227,29 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading }: Create
           </div>
 
           <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Template *
+              </label>
+              <select
+                {...register('templateId')}
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              >
+                <option value="">Select a template</option>
+                {templates.map(template => (
+                  <option key={template.id} value={template.id}>
+                    {template.name}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-500">
+                Template settings will auto-populate the form below
+              </p>
+              {errors.templateId && (
+                <p className="mt-1 text-sm text-red-600">{errors.templateId.message}</p>
+              )}
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Destination URL *
