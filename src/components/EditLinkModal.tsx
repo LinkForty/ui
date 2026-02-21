@@ -9,9 +9,16 @@ const updateLinkSchema = z.object({
   original_url: z.string().url('Please enter a valid URL').optional(),
   title: z.string().max(255, 'Title must be less than 255 characters').optional(),
   description: z.string().max(1000, 'Description must be less than 1000 characters').optional(),
-  ios_url: z.string().url('Please enter a valid iOS URL').optional().or(z.literal('')),
-  android_url: z.string().url('Please enter a valid Android URL').optional().or(z.literal('')),
+  ios_app_store_url: z.string().url('Please enter a valid iOS URL').optional().or(z.literal('')),
+  android_app_store_url: z.string().url('Please enter a valid Android URL').optional().or(z.literal('')),
   web_fallback_url: z.string().url('Please enter a valid fallback URL').optional().or(z.literal('')),
+  app_scheme: z.string()
+    .regex(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//, 'Must be a valid URI scheme (e.g., myapp://)')
+    .optional()
+    .or(z.literal('')),
+  ios_universal_link: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  android_app_link: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  deep_link_path: z.string().max(500, 'Deep link path too long').optional().or(z.literal('')),
   is_active: z.boolean().optional(),
   og_title: z.string().max(255, 'OG title must be less than 255 characters').optional(),
   og_description: z.string().max(1000, 'OG description must be less than 1000 characters').optional(),
@@ -92,10 +99,19 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading }: Ed
       setValue('original_url', link.original_url);
       setValue('title', link.title || '');
       setValue('description', link.description || '');
-      setValue('ios_url', link.ios_url || '');
-      setValue('android_url', link.android_url || '');
+      setValue('ios_app_store_url', link.ios_app_store_url || '');
+      setValue('android_app_store_url', link.android_app_store_url || '');
       setValue('web_fallback_url', link.web_fallback_url || '');
+      setValue('app_scheme', link.app_scheme || '');
+      setValue('ios_universal_link', link.ios_universal_link || '');
+      setValue('android_app_link', link.android_app_link || '');
+      setValue('deep_link_path', link.deep_link_path || '');
       setValue('is_active', link.is_active);
+      setValue('og_title', link.og_title || '');
+      setValue('og_description', link.og_description || '');
+      setValue('og_image_url', link.og_image_url || '');
+      setValue('og_type', link.og_type || 'website');
+      setValue('attribution_window_hours', link.attribution_window_hours || 168);
       setValue('utmSource', link.utmParameters?.source || '');
       setValue('utmMedium', link.utmParameters?.medium || '');
       setValue('utmCampaign', link.utmParameters?.campaign || '');
@@ -114,9 +130,13 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading }: Ed
       originalUrl: data.original_url,
       title: data.title,
       description: data.description,
-      iosUrl: data.ios_url || undefined,
-      androidUrl: data.android_url || undefined,
+      iosAppStoreUrl: data.ios_app_store_url || undefined,
+      androidAppStoreUrl: data.android_app_store_url || undefined,
       webFallbackUrl: data.web_fallback_url || undefined,
+      appScheme: data.app_scheme || undefined,
+      iosUniversalLink: data.ios_universal_link || undefined,
+      androidAppLink: data.android_app_link || undefined,
+      deepLinkPath: data.deep_link_path || undefined,
       isActive: data.is_active,
       ogTitle: data.og_title,
       ogDescription: data.og_description,
@@ -255,31 +275,31 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading }: Ed
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      iOS App URL
+                      iOS App Store URL
                     </label>
                     <input
-                      {...register('ios_url')}
+                      {...register('ios_app_store_url')}
                       type="url"
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       placeholder="https://apps.apple.com/..."
                     />
-                    {errors.ios_url && (
-                      <p className="mt-1 text-sm text-red-600">{errors.ios_url.message}</p>
+                    {errors.ios_app_store_url && (
+                      <p className="mt-1 text-sm text-red-600">{errors.ios_app_store_url.message}</p>
                     )}
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Android App URL
+                      Android App Store URL
                     </label>
                     <input
-                      {...register('android_url')}
+                      {...register('android_app_store_url')}
                       type="url"
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       placeholder="https://play.google.com/..."
                     />
-                    {errors.android_url && (
-                      <p className="mt-1 text-sm text-red-600">{errors.android_url.message}</p>
+                    {errors.android_app_store_url && (
+                      <p className="mt-1 text-sm text-red-600">{errors.android_app_store_url.message}</p>
                     )}
                   </div>
                 </div>
@@ -297,6 +317,73 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading }: Ed
                   {errors.web_fallback_url && (
                     <p className="mt-1 text-sm text-red-600">{errors.web_fallback_url.message}</p>
                   )}
+                </div>
+
+                <h4 className="text-md font-medium text-gray-900">Deep Linking</h4>
+                <p className="text-sm text-gray-500 -mt-2">
+                  Configure how your app opens specific content when a user clicks the link
+                </p>
+
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      App URI Scheme
+                    </label>
+                    <input
+                      {...register('app_scheme')}
+                      type="text"
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="myapp://"
+                    />
+                    {errors.app_scheme && (
+                      <p className="mt-1 text-sm text-red-600">{errors.app_scheme.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Deep Link Path
+                    </label>
+                    <input
+                      {...register('deep_link_path')}
+                      type="text"
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="/products/123"
+                    />
+                    {errors.deep_link_path && (
+                      <p className="mt-1 text-sm text-red-600">{errors.deep_link_path.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      iOS Universal Link
+                    </label>
+                    <input
+                      {...register('ios_universal_link')}
+                      type="url"
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="https://example.com/app/..."
+                    />
+                    {errors.ios_universal_link && (
+                      <p className="mt-1 text-sm text-red-600">{errors.ios_universal_link.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Android App Link
+                    </label>
+                    <input
+                      {...register('android_app_link')}
+                      type="url"
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="https://example.com/app/..."
+                    />
+                    {errors.android_app_link && (
+                      <p className="mt-1 text-sm text-red-600">{errors.android_app_link.message}</p>
+                    )}
+                  </div>
                 </div>
 
                 <h4 className="text-md font-medium text-gray-900">Social Media Preview (Open Graph)</h4>

@@ -14,19 +14,22 @@ interface LinkTableProps {
 export function LinkTable({ links, onEdit, onDelete, onViewQRCode, baseUrl = window.location.origin }: LinkTableProps) {
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
 
-  const handleCopyLink = async (short_code: string) => {
-    const shortUrl = `${baseUrl}/${short_code}`;
+  const getShortUrl = (link: Link) => {
+    if (link.template_slug) {
+      return `${baseUrl}/${link.template_slug}/${link.short_code}`;
+    }
+    return `${baseUrl}/${link.short_code}`;
+  };
+
+  const handleCopyLink = async (link: Link) => {
+    const shortUrl = getShortUrl(link);
     try {
       await navigator.clipboard.writeText(shortUrl);
-      setCopiedLink(short_code);
+      setCopiedLink(link.short_code);
       setTimeout(() => setCopiedLink(null), 2000);
     } catch (err) {
       console.error('Failed to copy link:', err);
     }
-  };
-
-  const getShortUrl = (short_code: string) => {
-    return `${baseUrl}/${short_code}`;
   };
 
   return (
@@ -65,11 +68,11 @@ export function LinkTable({ links, onEdit, onDelete, onViewQRCode, baseUrl = win
                         {link.title || 'Untitled'}
                       </div>
                       <div className="text-xs text-blue-600 font-mono truncate">
-                        {getShortUrl(link.short_code)}
+                        {getShortUrl(link)}
                       </div>
                     </div>
                     <button
-                      onClick={() => handleCopyLink(link.short_code)}
+                      onClick={() => handleCopyLink(link)}
                       className="text-gray-400 hover:text-gray-600 flex-shrink-0"
                       title="Copy link"
                     >
@@ -120,7 +123,7 @@ export function LinkTable({ links, onEdit, onDelete, onViewQRCode, baseUrl = win
                 <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end gap-2">
                     <a
-                      href={getShortUrl(link.short_code)}
+                      href={getShortUrl(link)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-gray-400 hover:text-gray-600"

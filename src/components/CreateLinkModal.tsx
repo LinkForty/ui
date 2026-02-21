@@ -10,9 +10,16 @@ const createLinkSchema = z.object({
   originalUrl: z.string().min(1, 'URL is required').url('Please enter a valid URL'),
   title: z.string().max(255, 'Title must be less than 255 characters').optional(),
   description: z.string().max(1000, 'Description must be less than 1000 characters').optional(),
-  iosUrl: z.string().url('Please enter a valid iOS URL').optional().or(z.literal('')),
-  androidUrl: z.string().url('Please enter a valid Android URL').optional().or(z.literal('')),
+  iosAppStoreUrl: z.string().url('Please enter a valid iOS URL').optional().or(z.literal('')),
+  androidAppStoreUrl: z.string().url('Please enter a valid Android URL').optional().or(z.literal('')),
   webFallbackUrl: z.string().url('Please enter a valid fallback URL').optional().or(z.literal('')),
+  appScheme: z.string()
+    .regex(/^[a-z][a-z0-9+.-]*$/, 'Invalid URI scheme format')
+    .optional()
+    .or(z.literal('')),
+  iosUniversalLink: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  androidAppLink: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  deepLinkPath: z.string().optional(),
   customCode: z.string()
     .regex(/^[a-zA-Z0-9_-]*$/, 'Only letters, numbers, hyphens, and underscores allowed')
     .min(3, 'Custom code must be at least 3 characters')
@@ -108,10 +115,10 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading, template
 
     // Apply platform URLs from template if not already filled
     if (settings.defaultIosUrl) {
-      setValue('iosUrl', settings.defaultIosUrl);
+      setValue('iosAppStoreUrl', settings.defaultIosUrl);
     }
     if (settings.defaultAndroidUrl) {
-      setValue('androidUrl', settings.defaultAndroidUrl);
+      setValue('androidAppStoreUrl', settings.defaultAndroidUrl);
     }
     if (settings.defaultWebFallbackUrl) {
       setValue('webFallbackUrl', settings.defaultWebFallbackUrl);
@@ -151,9 +158,13 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading, template
       originalUrl: data.originalUrl,
       title: data.title,
       description: data.description,
-      iosUrl: data.iosUrl || undefined,
-      androidUrl: data.androidUrl || undefined,
+      iosAppStoreUrl: data.iosAppStoreUrl || undefined,
+      androidAppStoreUrl: data.androidAppStoreUrl || undefined,
       webFallbackUrl: data.webFallbackUrl || undefined,
+      appScheme: data.appScheme || undefined,
+      iosUniversalLink: data.iosUniversalLink || undefined,
+      androidAppLink: data.androidAppLink || undefined,
+      deepLinkPath: data.deepLinkPath || undefined,
       customCode: data.customCode,
       ogTitle: data.ogTitle,
       ogDescription: data.ogDescription,
@@ -323,31 +334,31 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading, template
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      iOS App URL
+                      iOS App Store URL
                     </label>
                     <input
-                      {...register('iosUrl')}
+                      {...register('iosAppStoreUrl')}
                       type="url"
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       placeholder="https://apps.apple.com/..."
                     />
-                    {errors.iosUrl && (
-                      <p className="mt-1 text-sm text-red-600">{errors.iosUrl.message}</p>
+                    {errors.iosAppStoreUrl && (
+                      <p className="mt-1 text-sm text-red-600">{errors.iosAppStoreUrl.message}</p>
                     )}
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Android App URL
+                      Android App Store URL
                     </label>
                     <input
-                      {...register('androidUrl')}
+                      {...register('androidAppStoreUrl')}
                       type="url"
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       placeholder="https://play.google.com/..."
                     />
-                    {errors.androidUrl && (
-                      <p className="mt-1 text-sm text-red-600">{errors.androidUrl.message}</p>
+                    {errors.androidAppStoreUrl && (
+                      <p className="mt-1 text-sm text-red-600">{errors.androidAppStoreUrl.message}</p>
                     )}
                   </div>
                 </div>
@@ -365,6 +376,78 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading, template
                   {errors.webFallbackUrl && (
                     <p className="mt-1 text-sm text-red-600">{errors.webFallbackUrl.message}</p>
                   )}
+                </div>
+
+                <h4 className="text-md font-medium text-gray-900">Deep Linking</h4>
+                <p className="text-sm text-gray-500 -mt-2">
+                  Configure how the link opens your app directly
+                </p>
+
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      App URI Scheme
+                    </label>
+                    <input
+                      {...register('appScheme')}
+                      type="text"
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="myapp"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      e.g., "myapp" or "com.company.app"
+                    </p>
+                    {errors.appScheme && (
+                      <p className="mt-1 text-sm text-red-600">{errors.appScheme.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Deep Link Path
+                    </label>
+                    <input
+                      {...register('deepLinkPath')}
+                      type="text"
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="/product/123"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      In-app destination path
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      iOS Universal Link
+                    </label>
+                    <input
+                      {...register('iosUniversalLink')}
+                      type="url"
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="https://app.example.com/..."
+                    />
+                    {errors.iosUniversalLink && (
+                      <p className="mt-1 text-sm text-red-600">{errors.iosUniversalLink.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Android App Link
+                    </label>
+                    <input
+                      {...register('androidAppLink')}
+                      type="url"
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="https://app.example.com/..."
+                    />
+                    {errors.androidAppLink && (
+                      <p className="mt-1 text-sm text-red-600">{errors.androidAppLink.message}</p>
+                    )}
+                  </div>
                 </div>
 
                 <h4 className="text-md font-medium text-gray-900">Social Media Preview (Open Graph)</h4>

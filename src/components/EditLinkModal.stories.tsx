@@ -65,6 +65,9 @@ function ModalWrapper(args: any) {
 export const Default: Story = {
   render: (args) => <ModalWrapper {...args} />,
   args: {
+    isOpen: true,
+    onClose: () => {},
+    onSubmit: async () => {},
     link: mockLink,
     isLoading: false,
   },
@@ -73,6 +76,9 @@ export const Default: Story = {
 export const Loading: Story = {
   render: (args) => <ModalWrapper {...args} />,
   args: {
+    isOpen: true,
+    onClose: () => {},
+    onSubmit: async () => {},
     link: mockLink,
     isLoading: true,
   },
@@ -81,6 +87,9 @@ export const Loading: Story = {
 export const MinimalLink: Story = {
   render: (args) => <ModalWrapper {...args} />,
   args: {
+    isOpen: true,
+    onClose: () => {},
+    onSubmit: async () => {},
     link: {
       id: '2',
       userId: 'user-1',

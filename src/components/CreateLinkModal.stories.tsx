@@ -79,6 +79,9 @@ function ModalWrapper(args: any) {
 export const Default: Story = {
   render: (args) => <ModalWrapper {...args} />,
   args: {
+    isOpen: true,
+    onClose: () => {},
+    onSubmit: async () => {},
     isLoading: false,
     templates: mockTemplates,
   },
@@ -87,6 +90,9 @@ export const Default: Story = {
 export const Loading: Story = {
   render: (args) => <ModalWrapper {...args} />,
   args: {
+    isOpen: true,
+    onClose: () => {},
+    onSubmit: async () => {},
     isLoading: true,
     templates: mockTemplates,
   },

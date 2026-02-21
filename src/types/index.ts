@@ -1,13 +1,51 @@
+export interface LinkTemplateSettings {
+  defaultIosUrl?: string;
+  defaultAndroidUrl?: string;
+  defaultWebFallbackUrl?: string;
+  defaultAttributionWindowHours?: number;
+  utmParameters?: UTMParameters;
+  targetingRules?: TargetingRules;
+  expiresAfterDays?: number;
+}
+
+export interface LinkTemplate {
+  id: string;
+  userId?: string;
+  name: string;
+  slug: string;
+  description?: string;
+  settings: LinkTemplateSettings;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateTemplateRequest {
+  name: string;
+  description?: string;
+  settings?: LinkTemplateSettings;
+  isDefault?: boolean;
+}
+
+export interface UpdateTemplateRequest extends Partial<CreateTemplateRequest> {}
+
 export interface Link {
   id: string;
-  userId: string;
+  userId?: string;
+  template_id?: string;
+  template_slug?: string;
   short_code: string;
   original_url: string;
   title?: string;
   description?: string;
-  ios_url?: string;
-  android_url?: string;
+  ios_app_store_url?: string;
+  android_app_store_url?: string;
   web_fallback_url?: string;
+  app_scheme?: string;
+  ios_universal_link?: string;
+  android_app_link?: string;
+  deep_link_path?: string;
+  deep_link_parameters?: Record<string, any>;
   utmParameters?: UTMParameters;
   targeting_rules?: TargetingRules;
   og_title?: string;
@@ -41,9 +79,14 @@ export interface CreateLinkRequest {
   originalUrl: string;
   title?: string;
   description?: string;
-  iosUrl?: string;
-  androidUrl?: string;
+  iosAppStoreUrl?: string;
+  androidAppStoreUrl?: string;
   webFallbackUrl?: string;
+  appScheme?: string;
+  iosUniversalLink?: string;
+  androidAppLink?: string;
+  deepLinkPath?: string;
+  deepLinkParameters?: Record<string, any>;
   utmParameters?: UTMParameters;
   targetingRules?: TargetingRules;
   ogTitle?: string;
@@ -58,38 +101,6 @@ export interface CreateLinkRequest {
 export interface UpdateLinkRequest extends Partial<CreateLinkRequest> {
   isActive?: boolean;
 }
-
-export interface LinkTemplate {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  settings: {
-    // Default platform URLs (can be overridden per link)
-    defaultIosUrl?: string;
-    defaultAndroidUrl?: string;
-    defaultWebFallbackUrl?: string;
-    // Default attribution window (can be overridden per link)
-    defaultAttributionWindowHours?: number;
-    // Default UTM parameters (can be overridden per link)
-    utmParameters?: UTMParameters;
-    // Default targeting rules (can be overridden per link)
-    targetingRules?: TargetingRules;
-    expiresAfterDays?: number;
-  };
-  is_default: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface CreateTemplateRequest {
-  name: string;
-  description?: string;
-  settings?: LinkTemplate['settings'];
-  isDefault?: boolean;
-}
-
-export interface UpdateTemplateRequest extends Partial<CreateTemplateRequest> {}
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
