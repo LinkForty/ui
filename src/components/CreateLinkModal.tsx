@@ -3,10 +3,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { X } from 'lucide-react';
-import { CreateLinkRequest, LinkTemplate } from '../types';
+import { CreateLinkRequest, LinkTemplate, Project } from '../types';
 
 const createLinkSchema = z.object({
   templateId: z.string().min(1, 'Template is required'),
+  projectId: z.string().optional(),
   originalUrl: z.string().min(1, 'URL is required').url('Please enter a valid URL'),
   title: z.string().max(255, 'Title must be less than 255 characters').optional(),
   description: z.string().max(1000, 'Description must be less than 1000 characters').optional(),
@@ -53,6 +54,7 @@ interface CreateLinkModalProps {
   onSubmit: (data: CreateLinkRequest) => Promise<void>;
   isLoading?: boolean;
   templates: LinkTemplate[];
+  projects?: Project[];
 }
 
 const COUNTRY_OPTIONS = [
@@ -84,7 +86,7 @@ const LANGUAGE_OPTIONS = [
   { code: 'hi', name: 'Hindi' },
 ];
 
-export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading, templates }: CreateLinkModalProps) {
+export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading, templates, projects = [] }: CreateLinkModalProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [selectedDevices, setSelectedDevices] = useState<('ios' | 'android' | 'web')[]>([]);
@@ -155,6 +157,7 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading, template
   const handleFormSubmit = async (data: CreateLinkFormData) => {
     const linkData: CreateLinkRequest = {
       templateId: data.templateId,
+      projectId: data.projectId || undefined,
       originalUrl: data.originalUrl,
       title: data.title,
       description: data.description,
@@ -275,6 +278,28 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading, template
                 <p className="mt-1 text-sm text-red-600">{errors.originalUrl.message}</p>
               )}
             </div>
+
+            {projects && projects.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Project
+                </label>
+                <select
+                  {...register('projectId')}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  <option value="">No Project</option>
+                  {projects.map(project => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  Optional: Organize your link within a project
+                </p>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div>

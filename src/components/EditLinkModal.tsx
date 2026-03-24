@@ -3,9 +3,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { X } from 'lucide-react';
-import { Link, UpdateLinkRequest } from '../types';
+import { Link, UpdateLinkRequest, Project } from '../types';
 
 const updateLinkSchema = z.object({
+  project_id: z.string().optional(),
   original_url: z.string().url('Please enter a valid URL').optional(),
   title: z.string().max(255, 'Title must be less than 255 characters').optional(),
   description: z.string().max(1000, 'Description must be less than 1000 characters').optional(),
@@ -76,9 +77,10 @@ interface EditLinkModalProps {
   onSubmit: (data: UpdateLinkRequest) => Promise<void>;
   link: Link | null;
   isLoading?: boolean;
+  projects?: Project[];
 }
 
-export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading }: EditLinkModalProps) {
+export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, projects = [] }: EditLinkModalProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [selectedDevices, setSelectedDevices] = useState<('ios' | 'android' | 'web')[]>([]);
@@ -96,6 +98,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading }: Ed
 
   useEffect(() => {
     if (link && isOpen) {
+      setValue('project_id', link.project_id || '');
       setValue('original_url', link.original_url);
       setValue('title', link.title || '');
       setValue('description', link.description || '');
@@ -127,6 +130,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading }: Ed
 
   const handleFormSubmit = async (data: UpdateLinkFormData) => {
     const linkData: UpdateLinkRequest = {
+      projectId: data.project_id || undefined,
       originalUrl: data.original_url,
       title: data.title,
       description: data.description,
@@ -220,6 +224,28 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading }: Ed
                 <p className="mt-1 text-sm text-red-600">{errors.original_url.message}</p>
               )}
             </div>
+
+            {projects && projects.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Project
+                </label>
+                <select
+                  {...register('project_id')}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  <option value="">No Project</option>
+                  {projects.map(project => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  Optional: Organize your link within a project
+                </p>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div>

@@ -34,6 +34,7 @@ export interface Link {
   userId?: string;
   template_id?: string;
   template_slug?: string;
+  project_id?: string;
   short_code: string;
   original_url: string;
   title?: string;
@@ -60,6 +61,16 @@ export interface Link {
   click_count?: number;
 }
 
+export interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  userId: string;
+  organizationId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface UTMParameters {
   source?: string;
   medium?: string;
@@ -76,6 +87,7 @@ export interface TargetingRules {
 
 export interface CreateLinkRequest {
   templateId: string;
+  projectId?: string;
   originalUrl: string;
   title?: string;
   description?: string;

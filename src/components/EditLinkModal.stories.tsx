@@ -70,6 +70,7 @@ export const Default: Story = {
     onSubmit: async () => {},
     link: mockLink,
     isLoading: false,
+    projects: [],
   },
 };
 
@@ -81,6 +82,7 @@ export const Loading: Story = {
     onSubmit: async () => {},
     link: mockLink,
     isLoading: true,
+    projects: [],
   },
 };
 
@@ -100,5 +102,6 @@ export const MinimalLink: Story = {
       updated_at: '2024-01-15T10:30:00Z',
     },
     isLoading: false,
+    projects: [],
   },
 };

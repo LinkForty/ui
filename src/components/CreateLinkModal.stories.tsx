@@ -84,6 +84,7 @@ export const Default: Story = {
     onSubmit: async () => {},
     isLoading: false,
     templates: mockTemplates,
+    projects: [],
   },
 };
 
@@ -95,5 +96,6 @@ export const Loading: Story = {
     onSubmit: async () => {},
     isLoading: true,
     templates: mockTemplates,
+    projects: [],
   },
 };
