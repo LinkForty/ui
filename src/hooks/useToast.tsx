@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Toast, ToastType } from '../types';
 import { ToastItem } from '../components/Toast';
 
@@ -52,11 +53,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={{ showToast, success, error, warning, info }}>
       {children}
       {/* Toast Container */}
-      <div className="fixed top-4 right-4 z-50 space-y-4 pointer-events-none">
-        {toasts.map((toast) => (
-          <ToastItem key={toast.id} toast={toast} onClose={removeToast} />
-        ))}
-      </div>
+      {createPortal(
+        <div className="fixed top-4 right-4 z-50 space-y-4">
+          {toasts.map((toast) => (
+            <ToastItem key={toast.id} toast={toast} onClose={removeToast} />
+          ))}
+        </div>,
+        document.body
+      )}
     </ToastContext.Provider>
   );
 }

@@ -53,6 +53,3 @@ pids/
 # Temporary files
 tmp/
 temp/
-
-# Project instructions (local only)
-CLAUDE.md

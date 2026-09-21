@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
+import type { MouseEvent } from 'react';
 import { CheckCircle, XCircle, AlertCircle, X } from 'lucide-react';
 import { Toast } from '../types';
 
@@ -40,9 +41,22 @@ export function ToastItem({ toast, onClose }: ToastProps) {
     return () => clearTimeout(timer);
   }, [toast.id, toast.duration, onClose]);
 
+  const handleClose = useCallback(
+    (e: MouseEvent) => {
+      e.stopPropagation();
+      onClose(toast.id);
+    },
+    [onClose, toast.id]
+  );
+
+  const stopClickPropagation = useCallback((e: MouseEvent) => {
+    e.stopPropagation();
+  }, []);
+
   return (
     <div
       className={`max-w-md w-full shadow-lg rounded-lg pointer-events-auto border ${colors[toast.type]} animate-slide-in`}
+      onClick={stopClickPropagation}
     >
       <div className="p-4">
         <div className="flex items-start gap-3">
@@ -54,7 +68,7 @@ export function ToastItem({ toast, onClose }: ToastProps) {
           </div>
           <div className="flex-shrink-0">
             <button
-              onClick={() => onClose(toast.id)}
+              onClick={handleClose}
               className="inline-flex text-gray-400 hover:text-gray-500 focus:outline-none"
             >
               <X className="h-4 w-4" />

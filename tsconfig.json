@@ -27,6 +27,6 @@
     "declarationDir": "./dist"
   },
   "include": ["src"],
-  "exclude": ["**/*.stories.tsx", "**/*.stories.ts"],
+  "exclude": ["src/**/*.stories.tsx", "src/**/*.test.tsx", "node_modules"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

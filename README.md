@@ -1,37 +1,38 @@
 # @linkforty/ui
 
-**React UI components for deeplink management**
+**React components for deeplink management interfaces**
 
-Beautiful, accessible React components for building deeplink management interfaces. Part of the LinkForty open-source ecosystem.
+The link table, link detail view, create/edit modals, app configuration form and toast system that the LinkForty dashboard is built from, published so you can build your own interface on top of [`@linkforty/core`](https://github.com/linkforty/core) without starting from a blank page.
 
 [![npm version](https://img.shields.io/npm/v/@linkforty/ui.svg)](https://www.npmjs.com/package/@linkforty/ui)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-## Features
+## What's in the box
 
-✅ **LinkTable** - Sortable, filterable table for displaying links \
-✅ **CreateLinkModal** - Full-featured modal for creating new links \
-✅ **EditLinkModal** - Modal for editing existing links \
-✅ **Toast Notifications** - Beautiful toast system with provider \
-✅ **TypeScript** - Fully typed components \
-✅ **Tailwind CSS** - Styled with Tailwind utilities \
-✅ **Zero Configuration** - Works out of the box
+| Export | What it is |
+|---|---|
+| `LinkTable` | Table of links with sortable columns, per-row inspect and analytics actions, optional row selection |
+| `LinkDetail` | Read-only view of one link: short URL with copy and QR code, campaign parameters, template, project, deep link info, fallback paths, targeting rules, Launchpad funnel |
+| `CreateLinkModal` | Form for creating a link from a template, with project, domain, deep-linking, UTM, targeting and expiry fields |
+| `EditLinkModal` | The same form for an existing link |
+| `OrganizationAppConfig` | Form for a workspace's app configuration: URI scheme, iOS team and bundle id, Android package and SHA-256 fingerprints, Universal Link and App Link domains, default store and fallback URLs |
+| `ToastProvider`, `useToast`, `ToastItem` | Toast notifications, rendered through a portal on `document.body` |
+| Types | `Link`, `CreateLinkRequest`, `UpdateLinkRequest`, `LinkTemplate`, `Project`, `CustomDomainOption`, `AppConfig`, `Organization`, `UTMParameters`, `TargetingRules`, and more — see `src/types` |
+| Constants | `PROJECT_COLORS`, `DEFAULT_PROJECT_COLOR`, `projectPillClasses()`, `DEFAULT_SHORTLINK_DOMAIN` |
+
+The components are presentational: they take data and callbacks, and never call an API themselves. Fetching, mutations and routing stay in your app.
 
 ## Installation
 
 ```bash
-npm install @linkforty/ui
+npm install @linkforty/ui react react-dom
 ```
 
-### Peer Dependencies
+React 18 is a peer dependency.
 
-```bash
-npm install react react-dom
-```
+## Quick start
 
-## Quick Start
-
-### 1. Wrap your app with ToastProvider
+### 1. Import the styles and wrap your app in `ToastProvider`
 
 ```tsx
 import { ToastProvider } from '@linkforty/ui';
@@ -40,7 +41,7 @@ import '@linkforty/ui/styles';
 function App() {
   return (
     <ToastProvider>
-      {/* Your app */}
+      {/* your app */}
     </ToastProvider>
   );
 }
@@ -50,41 +51,42 @@ function App() {
 
 ```tsx
 import { LinkTable, CreateLinkModal, useToast } from '@linkforty/ui';
+import type { CreateLinkRequest } from '@linkforty/ui';
 import { useState } from 'react';
 
-function LinksPage() {
+function LinksPage({ links, templates, projects, domains, defaultDomain }) {
   const [showCreate, setShowCreate] = useState(false);
   const { success, error } = useToast();
 
-  const handleCreate = async (data) => {
+  const handleCreate = async (data: CreateLinkRequest) => {
     try {
-      await fetch('/api/links', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
-      success('Link created successfully!');
+      await api.createLink(data);
+      success('Link created');
       setShowCreate(false);
-    } catch (err) {
+    } catch (e) {
       error('Failed to create link');
     }
   };
 
   return (
-    <div>
-      <button onClick={() => setShowCreate(true)}>Create Link</button>
-
+    <>
+      <button onClick={() => setShowCreate(true)}>New link</button>
       <LinkTable
         links={links}
-        onEdit={(link) => console.log('Edit', link)}
-        onDelete={(id) => console.log('Delete', id)}
+        defaultDomain={defaultDomain}
+        onInspect={(link) => navigate(`/links/${link.id}`)}
+        onViewAnalytics={(link) => navigate(`/analytics?link=${link.id}`)}
       />
-
       <CreateLinkModal
         isOpen={showCreate}
         onClose={() => setShowCreate(false)}
         onSubmit={handleCreate}
+        templates={templates}
+        projects={projects}
+        domains={domains}
+        defaultDomain={defaultDomain}
       />
-    </div>
+    </>
   );
 }
 ```
@@ -93,147 +95,113 @@ function LinksPage() {
 
 ### LinkTable
 
-Display a table of links with sorting, filtering, and actions.
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `links` | `Link[]` | Yes | Links to display |
+| `defaultDomain` | `string` | No | Host that links without an assigned domain are served on, e.g. `go.example.com` |
+| `customDomain` | `string` | No | Workspace-level custom domain, used when a link has no `domain` of its own |
+| `onInspect` | `(link: Link) => void` | No | Row action: open the link's detail view |
+| `onViewAnalytics` | `(link: Link) => void` | No | Row action: open the link's analytics |
+| `selectedIds` | `Set<string>` | No | Controlled row selection |
+| `onSelectionChange` | `(ids: Set<string>) => void` | No | Called when the selection changes; selection UI is shown only when both selection props are given |
 
-**Props:**
+The short URL shown per row is `https://<host>/<short_code>` (with the template slug in between when the link has one), where the host is the link's own `domain`, then `customDomain`, then `defaultDomain`, then `DEFAULT_SHORTLINK_DOMAIN`.
 
-| Prop       | Type                       | Required | Description                                                  |
-|------------|----------------------------|----------|--------------------------------------------------------------|
-| `links`    | `Link[]`                   | Yes      | Array of link objects                                        |
-| `onEdit`   | `(link: Link) => void`     | Yes      | Callback when edit is clicked                                |
-| `onDelete` | `(linkId: string) => void` | Yes      | Callback when delete is clicked                              |
-| `baseUrl`  | `string`                   | No       | Base URL for short links (default: `window.location.origin`) |
+### LinkDetail
 
-**Example:**
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `link` | `DiscoveredLink` | Yes | The link (`Link` plus optional `creator_email` and `template_name`) |
+| `baseShortUrl` | `string` | Yes | Short URL origin for links without an assigned domain, e.g. `https://go.example.com` |
+| `apiBaseUrl` | `string` | Yes | Origin of the API that serves `GET /api/links/:id/qr`, used by the QR code section |
+| `onNavigate` | `(path: string) => void` | No | Called for in-app navigation (template, project) so the host's router can handle it |
+| `renderUtmValue` | `(param, value) => ReactNode` | No | Overlay friendly names on UTM values; raw values are shown when omitted |
+| `fetchLaunchpadStats` | `(linkId, days) => Promise<LaunchpadLinkStats>` | No | Loads the Launchpad funnel for a period; the funnel card is hidden when omitted |
 
 ```tsx
-<LinkTable
-  links={[
-    {
-      id: '1',
-      short_code: 'abc123',
-      original_url: 'https://example.com',
-      title: 'My Link',
-      is_active: true,
-      created_at: '2024-01-01T00:00:00Z',
-      click_count: 42,
-    }
-  ]}
-  onEdit={(link) => setEditingLink(link)}
-  onDelete={(id) => handleDelete(id)}
-  baseUrl="https://myapp.com"
+<LinkDetail
+  link={link}
+  baseShortUrl="https://go.example.com"
+  apiBaseUrl="https://api.example.com"
+  onNavigate={(path) => navigate(path)}
+  fetchLaunchpadStats={(id, days) => api.getLaunchpadStats(id, days)}
 />
 ```
 
 ### CreateLinkModal
 
-Modal for creating new links with advanced options.
-
-**Props:**
-
-| Prop        | Type                                         | Required | Description                     |
-|-------------|----------------------------------------------|----------|---------------------------------|
-| `isOpen`    | `boolean`                                    | Yes      | Whether modal is open           |
-| `onClose`   | `() => void`                                 | Yes      | Callback to close modal         |
-| `onSubmit`  | `(data: CreateLinkRequest) => Promise<void>` | Yes      | Callback when form is submitted |
-| `isLoading` | `boolean`                                    | No       | Show loading state              |
-
-**Example:**
-
-```tsx
-<CreateLinkModal
-  isOpen={showModal}
-  onClose={() => setShowModal(false)}
-  onSubmit={async (data) => {
-    await apiClient.post('/api/links', data);
-  }}
-  isLoading={isCreating}
-/>
-```
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `isOpen` | `boolean` | Yes | Controlled open state |
+| `onClose` | `() => void` | Yes | |
+| `onSubmit` | `(data: CreateLinkRequest) => Promise<void>` | Yes | Receives the validated payload |
+| `templates` | `LinkTemplate[]` | Yes | Templates to choose from; the default template's settings prefill the form |
+| `projects` | `Project[]` | No | Shows a project select when non-empty; `projectId` is `null` when none is chosen |
+| `domains` | `CustomDomainOption[]` | No | Verified custom domains; shows a domain select when there is a real choice; `domainId` is `null` for the workspace default |
+| `defaultDomain` | `string` | No | Host shown for the workspace default option |
+| `orgAppConfig` | `AppConfig` | No | Prefills deep-linking fields from the workspace's app configuration |
+| `isLoading` | `boolean` | No | Disables the submit button |
 
 ### EditLinkModal
 
-Modal for editing existing links.
+Same props as `CreateLinkModal` minus `orgAppConfig`, plus:
 
-**Props:**
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `link` | `Link \| null` | Yes | The link being edited; `null` renders nothing |
+| `onSubmit` | `(data: UpdateLinkRequest) => Promise<void>` | Yes | `expiresAt: null` clears an expiration date |
+| `templates` | `LinkTemplate[]` | No | Used to show the template's name |
 
-| Prop        | Type                                         | Required | Description                     |
-|-------------|----------------------------------------------|----------|---------------------------------|
-| `isOpen`    | `boolean`                                    | Yes      | Whether modal is open           |
-| `onClose`   | `() => void`                                 | Yes      | Callback to close modal         |
-| `onSubmit`  | `(data: UpdateLinkRequest) => Promise<void>` | Yes      | Callback when form is submitted |
-| `link`      | `Link \| null`                               | Yes      | Link to edit                    |
-| `isLoading` | `boolean`                                    | No       | Show loading state              |
+### OrganizationAppConfig
 
-**Example:**
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `appConfig` | `AppConfig` | No | Current values |
+| `onSave` | `(appConfig: AppConfig) => Promise<void>` | Yes | Receives the validated configuration |
+| `isLoading` | `boolean` | No | Disables the save button |
+| `bare` | `boolean` | No | Render without the card wrapper, for embedding in your own panel |
 
 ```tsx
-<EditLinkModal
-  isOpen={!!editingLink}
-  onClose={() => setEditingLink(null)}
-  onSubmit={async (data) => {
-    await apiClient.put(`/api/links/${editingLink.id}`, data);
-  }}
-  link={editingLink}
+<OrganizationAppConfig
+  appConfig={organization.settings?.appConfig}
+  onSave={(appConfig) => api.updateOrganization({ settings: { appConfig } })}
 />
 ```
 
-### Toast System
-
-#### ToastProvider
-
-Wrap your app with this provider to enable toasts.
+### Toasts
 
 ```tsx
-import { ToastProvider } from '@linkforty/ui';
+const { success, error, warning, info, showToast } = useToast();
 
-function App() {
-  return (
-    <ToastProvider>
-      {/* Your app */}
-    </ToastProvider>
-  );
-}
+success('Saved');
+error('Something went wrong', 8000);
+showToast('Custom', 'info', 3000);
 ```
 
-#### useToast Hook
+## Styling
 
-Hook to show toast notifications.
+The components are styled with Tailwind utility classes compiled into the package stylesheet:
 
 ```tsx
-import { useToast } from '@linkforty/ui';
-
-function MyComponent() {
-  const { success, error, warning, info } = useToast();
-
-  const handleClick = () => {
-    success('Operation completed!');
-    error('Something went wrong');
-    warning('Please be careful');
-    info('Here is some info');
-  };
-
-  return <button onClick={handleClick}>Show Toast</button>;
-}
+import '@linkforty/ui/styles';
 ```
 
-**Methods:**
-
-- `success(message, duration?)` - Show success toast
-- `error(message, duration?)` - Show error toast
-- `warning(message, duration?)` - Show warning toast
-- `info(message, duration?)` - Show info toast
-- `showToast(message, type, duration?)` - Show custom toast
+To restyle, override the classes in your own stylesheet or fork the components; there is no theme API.
 
 ## Types
 
-All TypeScript types are exported from the package:
+Everything under `src/types` is exported:
 
 ```tsx
 import type {
   Link,
   CreateLinkRequest,
   UpdateLinkRequest,
+  LinkTemplate,
+  Project,
+  CustomDomainOption,
+  AppConfig,
+  Organization,
   UTMParameters,
   TargetingRules,
   Toast,
@@ -241,120 +209,34 @@ import type {
 } from '@linkforty/ui';
 ```
 
-### Link
+Field names follow the API they were built against: snake_case on records read from the API (`Link`, `LinkTemplate`), camelCase on request payloads (`CreateLinkRequest`, `AppConfig`).
 
-```tsx
-interface Link {
-  id: string;
-  userId: string;
-  short_code: string;
-  original_url: string;
-  title?: string;
-  description?: string;
-  ios_url?: string;
-  android_url?: string;
-  web_fallback_url?: string;
-  utmParameters?: UTMParameters;
-  targeting_rules?: TargetingRules;
-  is_active: boolean;
-  expires_at?: string;
-  created_at: string;
-  updated_at: string;
-  click_count?: number;
-}
+## Form validation
+
+The modals validate with `zod` and show errors inline: URLs must be well-formed, custom codes allow letters, numbers, hyphens and underscores, and text fields carry maximum lengths.
+
+## Development
+
+```bash
+npm install
+npm run storybook   # component explorer on port 6006
+npm run build       # ESM + CJS + type declarations into dist/
 ```
 
-### CreateLinkRequest
+## Browser support
 
-```tsx
-interface CreateLinkRequest {
-  originalUrl: string;
-  title?: string;
-  description?: string;
-  iosUrl?: string;
-  androidUrl?: string;
-  webFallbackUrl?: string;
-  utmParameters?: UTMParameters;
-  targetingRules?: TargetingRules;
-  customCode?: string;
-  expiresAt?: string;
-}
-```
+Current versions of Chrome, Firefox, Safari and Edge.
 
-## Styling
+## Changelog
 
-The components use Tailwind CSS. You need to import the styles in your app:
-
-```tsx
-import '@linkforty/ui/styles';
-```
-
-If you want to customize the styles, you can override the Tailwind classes or create your own theme.
-
-## Advanced Usage
-
-### Custom Base URL
-
-You can customize the base URL for short links:
-
-```tsx
-<LinkTable
-  links={links}
-  baseUrl="https://custom-domain.com"
-  onEdit={handleEdit}
-  onDelete={handleDelete}
-/>
-```
-
-### Controlled Modals
-
-The modals are controlled components. You manage the open/close state:
-
-```tsx
-const [isOpen, setIsOpen] = useState(false);
-const [currentLink, setCurrentLink] = useState(null);
-
-// Open modal
-setIsOpen(true);
-
-// Close modal
-setIsOpen(false);
-```
-
-### Form Validation
-
-The modals use `zod` for form validation. Validation errors are displayed automatically:
-
-- URLs must be valid
-- Custom codes only allow letters, numbers, hyphens, and underscores
-- All fields have max length validation
-
-## Browser Support
-
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-
-## Contributing
-
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+See [CHANGELOG.md](CHANGELOG.md). 3.0.0 is a breaking release; read its Removed and Changed sections before upgrading from 2.x.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE).
 
-## Related Projects
+## Related projects
 
-- **@linkforty/core** - Backend engine for deeplink management
-- **[LinkForty Cloud](https://linkforty.com)** - Hosted SaaS version
-
-## Support
-
-- **Documentation**: [https://docs.linkforty.com](https://docs.linkforty.com)
-- **Issues**: [GitHub Issues](https://github.com/linkforty/ui/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/linkforty/ui/discussions)
-
----
-
-Made with ❤️ by the LinkForty team
+- [`@linkforty/core`](https://github.com/linkforty/core) — the open-source deeplink engine these components are built for
+- [LinkForty Cloud](https://linkforty.com) — the hosted platform
+- [Documentation](https://docs.linkforty.com)

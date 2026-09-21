@@ -65,33 +65,22 @@ function ModalWrapper(args: any) {
 export const Default: Story = {
   render: (args) => <ModalWrapper {...args} />,
   args: {
-    isOpen: true,
-    onClose: () => {},
-    onSubmit: async () => {},
     link: mockLink,
     isLoading: false,
-    projects: [],
   },
 };
 
 export const Loading: Story = {
   render: (args) => <ModalWrapper {...args} />,
   args: {
-    isOpen: true,
-    onClose: () => {},
-    onSubmit: async () => {},
     link: mockLink,
     isLoading: true,
-    projects: [],
   },
 };
 
 export const MinimalLink: Story = {
   render: (args) => <ModalWrapper {...args} />,
   args: {
-    isOpen: true,
-    onClose: () => {},
-    onSubmit: async () => {},
     link: {
       id: '2',
       userId: 'user-1',
@@ -102,6 +91,14 @@ export const MinimalLink: Story = {
       updated_at: '2024-01-15T10:30:00Z',
     },
     isLoading: false,
-    projects: [],
+  },
+};
+
+/** A link that opted out of the Launchpad page; the control shows "Never show". */
+export const LaunchpadOff: Story = {
+  render: (args) => <ModalWrapper {...args} />,
+  args: {
+    link: { ...mockLink, id: '3', short_code: 'app-only', launchpad_mode: 'off' },
+    isLoading: false,
   },
 };
