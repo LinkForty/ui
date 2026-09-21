@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-09-21
+
+Same contents as 3.0.0. Re-released under a new version number because the registry refused `3.0.0`: a `@linkforty/ui` package had been published and unpublished earlier in 2026, and npm never reuses a version number that existed before. This is the first version of the package available on npm.
+
 ## [3.0.0] - 2026-09-21
 
 This release brings the published package back in line with the copy that the LinkForty dashboard is built from, which had moved on without it since 2.0.0. It is a large breaking release; read the Removed and Changed sections before upgrading.
