@@ -2,6 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Surfaces.
+ *
+ * The components paint their panels, table chrome, inputs and cards with these
+ * classes rather than fixed colors, so a host can theme every one of them at
+ * once through the custom properties below — the LinkForty dashboard defines
+ * them per theme (light, dark, and others) on <html>. Without the properties
+ * the fallbacks apply: a light surface, and a dark one when the visitor's
+ * system prefers dark, which is also how this stylesheet's `dark:` utilities
+ * behave.
+ *
+ * A host that defines its own `.surface-*` rules keeps them: these are plain
+ * single-class selectors, and whichever stylesheet loads later wins.
+ */
+@layer components {
+  .surface-popover,
+  .surface-card {
+    background-color: var(--color-popover-bg, #ffffff);
+    border-color: var(--color-popover-border, #e5e7eb);
+  }
+  .surface-sunken {
+    background-color: var(--color-input-bg, #ffffff);
+    border-color: var(--color-input-border, #d1d5db);
+  }
+  .surface-table {
+    background-color: var(--color-table-bg, #ffffff);
+  }
+  .surface-table-header {
+    background-color: var(--color-table-header-bg, #f9fafb);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .surface-popover,
+    .surface-card {
+      background-color: var(--color-popover-bg, #2d3748);
+      border-color: var(--color-popover-border, #4b5563);
+    }
+    .surface-sunken {
+      background-color: var(--color-input-bg, #1f2937);
+      border-color: var(--color-input-border, #4b5563);
+    }
+    .surface-table {
+      background-color: var(--color-table-bg, #1f2937);
+    }
+    .surface-table-header {
+      background-color: var(--color-table-header-bg, #111827);
+    }
+  }
+}
+
 @keyframes slide-in {
   from {
     transform: translateX(100%);

@@ -1,6 +1,6 @@
 {
   "name": "@linkforty/ui",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "React UI components for deeplink management",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -21,7 +21,7 @@
     "link-management"
   ],
   "scripts": {
-    "build": "vite build && tsc --emitDeclarationOnly",
+    "build": "vite build && tsc --emitDeclarationOnly && tailwindcss -i src/styles/index.css -o dist/styles/index.css --minify",
     "dev": "vite",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"

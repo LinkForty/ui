@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.2] - 2026-09-21
+
+### Fixed
+
+- **The stylesheet ships.** `@linkforty/ui/styles` pointed at `dist/styles/index.css`, but no build had ever produced that file, so `import '@linkforty/ui/styles'` failed to resolve and every component rendered unstyled outside the LinkForty dashboard. The build now compiles it (Tailwind, minified, ~27 KB).
+- **Surfaces are self-contained.** Panels, cards, table chrome and inputs use `surface-popover`, `surface-card`, `surface-sunken`, `surface-table` and `surface-table-header`, which only the LinkForty dashboard defined. The stylesheet now defines them, with light defaults and dark ones under `prefers-color-scheme: dark`, and reads the host's `--color-popover-bg`, `--color-popover-border`, `--color-input-bg`, `--color-input-border`, `--color-table-bg` and `--color-table-header-bg` custom properties when set — so a host can theme all of them at once.
+- `OrganizationAppConfig` has a Storybook story.
+
 ## [3.0.1] - 2026-09-21
 
 Same contents as 3.0.0. Re-released under a new version number because the registry refused `3.0.0`: a `@linkforty/ui` package had been published and unpublished earlier in 2026, and npm never reuses a version number that existed before. This is the first version of the package available on npm.

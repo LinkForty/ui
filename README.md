@@ -186,7 +186,22 @@ The components are styled with Tailwind utility classes compiled into the packag
 import '@linkforty/ui/styles';
 ```
 
-To restyle, override the classes in your own stylesheet or fork the components; there is no theme API.
+The stylesheet includes Tailwind's base reset, so load it once, early.
+
+Surfaces (panels, cards, table chrome, inputs) read these custom properties when your page defines them, and fall back to a light palette — dark under `prefers-color-scheme: dark` — when it does not:
+
+```css
+:root {
+  --color-popover-bg: #ffffff;      /* panels and cards */
+  --color-popover-border: #e5e7eb;
+  --color-input-bg: #ffffff;        /* inputs and recessed areas */
+  --color-input-border: #d1d5db;
+  --color-table-bg: #ffffff;
+  --color-table-header-bg: #f9fafb;
+}
+```
+
+Beyond that, override the utility classes in your own stylesheet or fork the components; there is no wider theme API.
 
 ## Types
 
