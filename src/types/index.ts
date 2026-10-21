@@ -27,6 +27,10 @@ export interface Link {
   utmParameters?: UTMParameters;
   targeting_rules?: TargetingRules;
   attribution_window_hours?: number;
+  /** Install window in minutes; replaces the hours when set. */
+  attribution_window_minutes?: number | null;
+  /** A click hands this link to one install only. */
+  one_install_per_click?: boolean;
   event_attribution_window_hours?: number;
   is_active: boolean;
   expires_at?: string;
@@ -84,6 +88,9 @@ export interface CreateLinkRequest {
   utmParameters?: UTMParameters;
   targetingRules?: TargetingRules;
   attributionWindowHours?: number;
+  /** 5–129600; send this or attributionWindowHours, not both. */
+  attributionWindowMinutes?: number;
+  oneInstallPerClick?: boolean;
   eventAttributionWindowHours?: number;
   appendClickId?: boolean;
   launchpadMode?: 'inherit' | 'on' | 'off';
@@ -132,6 +139,10 @@ export interface LinkTemplate {
     defaultDeepLinkParameters?: Record<string, any>;
     // Default attribution window (can be overridden per link)
     defaultAttributionWindowHours?: number;
+    // Default install window in minutes; replaces the hours when set
+    defaultAttributionWindowMinutes?: number;
+    // Links made from the template match each click to one install only
+    defaultOneInstallPerClick?: boolean;
     // Default conversion (event-attribution) window (can be overridden per link)
     defaultEventAttributionWindowHours?: number;
     // Default UTM parameters (can be overridden per link)

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-10-21
+
+### Added
+
+- **Install windows under an hour.** The Attribution Window select in `CreateLinkModal` and `EditLinkModal` offers 5, 15 and 30 minutes alongside the hour presets, and sends `attributionWindowMinutes` for those (`attributionWindowHours` otherwise). A link's or template's window that isn't a preset is listed as its own option.
+- **Match each click to one install only.** A checkbox in both modals sends `oneInstallPerClick`; `CreateLinkModal` turns it on when the selected template's `defaultOneInstallPerClick` is set.
+- `INSTALL_WINDOW_OPTIONS`, `installWindowValue`, `installWindowFields` and `installWindowOptions` are exported for hosts that edit the same setting.
+- Types: `Link.attribution_window_minutes`, `Link.one_install_per_click`, `CreateLinkRequest.attributionWindowMinutes`, `CreateLinkRequest.oneInstallPerClick`, and the template settings `defaultAttributionWindowMinutes` and `defaultOneInstallPerClick`.
+
+### Fixed
+
+- `EditLinkModal` keeps a link's install window when it isn't one of the presets. Before, the select had no matching option and a save sent the first one, 1 hour.
+
 ## [3.0.3] - 2026-09-27
 
 ### Fixed

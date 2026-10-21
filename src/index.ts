@@ -16,3 +16,4 @@ export * from './types';
 // Constants
 export * from './constants/projectColors';
 export * from './constants/shortlink';
+export * from './constants/installWindow';

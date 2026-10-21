@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { X, Plus, Trash2, Info } from 'lucide-react';
 import { Link, UpdateLinkRequest, LinkTemplate, Project, CustomDomainOption } from '../types';
 import { DEFAULT_SHORTLINK_DOMAIN } from '../constants/shortlink';
+import { DEFAULT_INSTALL_WINDOW, installWindowFields, installWindowOptions, installWindowValue } from '../constants/installWindow';
 
 const updateLinkSchema = z.object({
   // .nullable() so that clearing the dropdown sends null (not undefined) and the PUT
@@ -32,11 +33,9 @@ const updateLinkSchema = z.object({
   // Existing fields
   is_active: z.boolean().optional(),
   templateId: z.string().optional(),
-  attributionWindowHours: z.coerce.number()
-    .int('Attribution window must be an integer')
-    .min(1, 'Attribution window must be at least 1 hour')
-    .max(2160, 'Attribution window must be at most 2160 hours (90 days)')
-    .optional(),
+  // "15m" or "168h" (constants/installWindow.ts)
+  attributionWindow: z.string().regex(/^\d+[mh]$/).optional(),
+  oneInstallPerClick: z.boolean().optional(),
   // Optional — empty means "use default" (resolved server-side to 168h).
   eventAttributionWindowHours: z.preprocess(
     (v) => (v === '' || v === undefined || v === null ? undefined : Number(v)),
@@ -143,6 +142,9 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
     resolver: zodResolver(updateLinkSchema),
   });
 
+  // The link's own window is listed even when it isn't a preset, so a save keeps it.
+  const linkInstallWindow = link ? installWindowValue(link.attribution_window_minutes, link.attribution_window_hours) : undefined;
+
   useEffect(() => {
     if (link && isOpen) {
       setValue('projectId', link.project_id || '');
@@ -174,7 +176,8 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
       }
 
       setValue('is_active', link.is_active);
-      setValue('attributionWindowHours', link.attribution_window_hours || 168);
+      setValue('attributionWindow', installWindowValue(link.attribution_window_minutes, link.attribution_window_hours));
+      setValue('oneInstallPerClick', link.one_install_per_click === true);
       // Empty string when unset → the "Use default" option.
       setValue('eventAttributionWindowHours', link.event_attribution_window_hours ?? ('' as unknown as number));
       // Cloud links default to appending the click id; only an explicit false unchecks.
@@ -227,7 +230,8 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
       deepLinkParameters: Object.keys(deepLinkParameters).length > 0 ? deepLinkParameters : undefined,
       // Existing fields
       isActive: data.is_active,
-      attributionWindowHours: data.attributionWindowHours,
+      ...installWindowFields(data.attributionWindow || DEFAULT_INSTALL_WINDOW),
+      oneInstallPerClick: data.oneInstallPerClick,
       eventAttributionWindowHours: data.eventAttributionWindowHours,
       appendClickId: data.appendClickId,
       launchpadMode: data.launchpadMode,
@@ -434,23 +438,35 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                   Attribution Window
                 </label>
                 <select
-                  {...register('attributionWindowHours')}
+                  {...register('attributionWindow')}
                   className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 >
-                  <option value="1">1 hour</option>
-                  <option value="24">24 hours (1 day)</option>
-                  <option value="72">72 hours (3 days)</option>
-                  <option value="168">168 hours (7 days) - Default</option>
-                  <option value="336">336 hours (14 days)</option>
-                  <option value="720">720 hours (30 days)</option>
-                  <option value="2160">2160 hours (90 days)</option>
+                  {installWindowOptions(linkInstallWindow).map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
                 </select>
                 <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                   Time window for attributing app installs to this link
                 </p>
-                {errors.attributionWindowHours && (
-                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{errors.attributionWindowHours.message}</p>
+                {errors.attributionWindow && (
+                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{errors.attributionWindow.message}</p>
                 )}
+                <label className="mt-3 flex items-start gap-2 cursor-pointer">
+                  <input
+                    {...register('oneInstallPerClick')}
+                    type="checkbox"
+                    className="mt-0.5 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-500 rounded bg-white dark:bg-gray-800 accent-blue-600 dark:accent-blue-500"
+                  />
+                  <span>
+                    <span className="block text-sm font-semibold text-gray-700 dark:text-gray-200">
+                      Match each click to one install only
+                    </span>
+                    <span className="block mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                      For single-use links, such as sign-in links. A reinstall, or a second device on the
+                      same network, doesn't receive this link again from the same click.
+                    </span>
+                  </span>
+                </label>
               </div>
 
               <div>

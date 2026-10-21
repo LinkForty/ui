@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { X, Plus, Trash2, Info } from 'lucide-react';
 import { CreateLinkRequest, LinkTemplate, AppConfig, Project, CustomDomainOption } from '../types';
 import { DEFAULT_SHORTLINK_DOMAIN } from '../constants/shortlink';
+import { DEFAULT_INSTALL_WINDOW, installWindowFields, installWindowOptions, installWindowValue } from '../constants/installWindow';
 
 const createLinkSchema = z.object({
   // .nullable() so that clearing the dropdown sends null (not undefined).
@@ -35,11 +36,9 @@ const createLinkSchema = z.object({
     .optional()
     .or(z.literal('')),
   templateId: z.string().min(1, 'Please select a template'),
-  attributionWindowHours: z.coerce.number()
-    .int('Attribution window must be an integer')
-    .min(1, 'Attribution window must be at least 1 hour')
-    .max(2160, 'Attribution window must be at most 2160 hours (90 days)')
-    .default(168),
+  // "15m" or "168h" (constants/installWindow.ts)
+  attributionWindow: z.string().regex(/^\d+[mh]$/).default(DEFAULT_INSTALL_WINDOW),
+  oneInstallPerClick: z.boolean().optional(),
   // Optional — empty means "use default" (resolved server-side to 168h).
   eventAttributionWindowHours: z.preprocess(
     (v) => (v === '' || v === undefined || v === null ? undefined : Number(v)),
@@ -144,6 +143,11 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading, template
 
   // Watch for template selection changes
   const selectedTemplateId = watch('templateId');
+  const selectedTemplateSettings = templates.find(t => t.id === selectedTemplateId)?.settings;
+  // The template's window is listed even when it isn't a preset, so it can be selected.
+  const templateInstallWindow = selectedTemplateSettings
+    ? installWindowValue(selectedTemplateSettings.defaultAttributionWindowMinutes, selectedTemplateSettings.defaultAttributionWindowHours)
+    : undefined;
 
   // Apply organization app config defaults when modal opens (runs before template defaults)
   useEffect(() => {
@@ -214,8 +218,12 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading, template
       setDeepLinkParams(params);
     }
 
-    if (settings.defaultAttributionWindowHours && !watch('attributionWindowHours')) {
-      setValue('attributionWindowHours', settings.defaultAttributionWindowHours);
+    if ((settings.defaultAttributionWindowMinutes || settings.defaultAttributionWindowHours) && !watch('attributionWindow')) {
+      setValue('attributionWindow', installWindowValue(settings.defaultAttributionWindowMinutes, settings.defaultAttributionWindowHours));
+    }
+
+    if (settings.defaultOneInstallPerClick && !watch('oneInstallPerClick')) {
+      setValue('oneInstallPerClick', true);
     }
 
     if (settings.defaultEventAttributionWindowHours && !watch('eventAttributionWindowHours')) {
@@ -286,7 +294,8 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading, template
       // Existing fields
       customCode: data.customCode,
       templateId: data.templateId,
-      attributionWindowHours: data.attributionWindowHours,
+      ...installWindowFields(data.attributionWindow || DEFAULT_INSTALL_WINDOW),
+      oneInstallPerClick: data.oneInstallPerClick,
       eventAttributionWindowHours: data.eventAttributionWindowHours,
       appendClickId: data.appendClickId,
       launchpadMode: data.launchpadMode,
@@ -508,24 +517,36 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading, template
                   Attribution Window
                 </label>
                 <select
-                  {...register('attributionWindowHours')}
-                  defaultValue="168"
+                  {...register('attributionWindow')}
+                  defaultValue={DEFAULT_INSTALL_WINDOW}
                   className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 >
-                  <option value="1">1 hour</option>
-                  <option value="24">24 hours (1 day)</option>
-                  <option value="72">72 hours (3 days)</option>
-                  <option value="168">168 hours (7 days) - Default</option>
-                  <option value="336">336 hours (14 days)</option>
-                  <option value="720">720 hours (30 days)</option>
-                  <option value="2160">2160 hours (90 days)</option>
+                  {installWindowOptions(templateInstallWindow).map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
                 </select>
                 <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                   Time window for attributing app installs to this link
                 </p>
-                {errors.attributionWindowHours && (
-                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{errors.attributionWindowHours.message}</p>
+                {errors.attributionWindow && (
+                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{errors.attributionWindow.message}</p>
                 )}
+                <label className="mt-3 flex items-start gap-2 cursor-pointer">
+                  <input
+                    {...register('oneInstallPerClick')}
+                    type="checkbox"
+                    className="mt-0.5 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-500 rounded bg-white dark:bg-gray-800 accent-blue-600 dark:accent-blue-500"
+                  />
+                  <span>
+                    <span className="block text-sm font-semibold text-gray-700 dark:text-gray-200">
+                      Match each click to one install only
+                    </span>
+                    <span className="block mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                      For single-use links, such as sign-in links. A reinstall, or a second device on the
+                      same network, doesn't receive this link again from the same click.
+                    </span>
+                  </span>
+                </label>
               </div>
 
               <div>
