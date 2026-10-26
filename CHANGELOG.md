@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-10-26
+
+### Added
+
+- **Shorter URLs on a workspace's own hosts.** `LinkTable` and `LinkDetail` take an optional `ownHosts` list. For a templated link on one of those hosts, they show, copy and QR-encode `https://{host}/{code}` instead of `https://{host}/{templateSlug}/{code}`. `LinkDetail` lists the template form under it as "Also works", with its own Copy button. Without `ownHosts`, nothing changes.
+- `shortUrlForms(link, baseOrigin, ownHosts)` is exported for hosts that print the same URLs elsewhere.
+
 ## [3.1.0] - 2026-10-21
 
 ### Added

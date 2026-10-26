@@ -17,3 +17,5 @@ export * from './types';
 export * from './constants/projectColors';
 export * from './constants/shortlink';
 export * from './constants/installWindow';
+export { shortUrlForms } from './utils/shortUrl';
+export type { ShortUrlForms } from './utils/shortUrl';

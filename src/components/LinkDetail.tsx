@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Copy, Check, Download, ExternalLink } from 'lucide-react';
 import { Link } from '../types';
+import { shortUrlForms } from '../utils/shortUrl';
 
 const COUNTRY_OPTIONS = [
   { code: 'US', name: 'United States' }, { code: 'GB', name: 'United Kingdom' },
@@ -78,18 +79,12 @@ export interface LinkDetailProps {
    * link that has never served the page unless it is set to always show it.
    */
   fetchLaunchpadStats?: (linkId: string, days: number) => Promise<LaunchpadLinkStats>;
-}
-
-// Per-link assigned domain wins over the org-default baseShortUrl
-function effectiveBaseShortUrl(link: DiscoveredLink, baseShortUrl: string) {
-  return link.domain ? `https://${link.domain}` : baseShortUrl;
-}
-
-function buildShortUrl(link: DiscoveredLink, baseShortUrl: string) {
-  const base = effectiveBaseShortUrl(link, baseShortUrl);
-  return link.template_slug
-    ? `${base}/${link.template_slug}/${link.short_code}`
-    : `${base}/${link.short_code}`;
+  /**
+   * Hostnames that belong to the link's workspace. On these, a templated link is
+   * shown and encoded as the shorter `/{code}`, with the `/{templateSlug}/{code}`
+   * form listed under it. Omitted, the template form is always used.
+   */
+  ownHosts?: string[];
 }
 
 function formatDate(dateStr: string) {
@@ -273,19 +268,17 @@ function LaunchpadSection({
 
 function QRSection({
   link,
-  baseShortUrl,
+  shortUrl,
   apiBaseUrl,
 }: {
   link: DiscoveredLink;
-  baseShortUrl: string;
+  shortUrl: string;
   apiBaseUrl: string;
 }) {
   const [format, setFormat] = useState<'png' | 'svg'>('png');
   const [size, setSize] = useState<QRSize>(512);
   const [color, setColor] = useState('#000000');
   const [bgcolor, setBgcolor] = useState('#ffffff');
-
-  const shortUrl = buildShortUrl(link, baseShortUrl);
 
   const qrUrl = `${apiBaseUrl}/api/links/${link.id}/qr?format=${format}&size=${size}&color=${encodeURIComponent(color)}&bgcolor=${encodeURIComponent(bgcolor)}&url=${encodeURIComponent(shortUrl)}`;
 
@@ -420,8 +413,8 @@ function QRSection({
   );
 }
 
-export function LinkDetail({ link, baseShortUrl, apiBaseUrl, onNavigate, renderUtmValue, fetchLaunchpadStats }: LinkDetailProps) {
-  const shortUrl = buildShortUrl(link, baseShortUrl);
+export function LinkDetail({ link, baseShortUrl, apiBaseUrl, onNavigate, renderUtmValue, fetchLaunchpadStats, ownHosts }: LinkDetailProps) {
+  const { primary: shortUrl, alternate: alternateShortUrl } = shortUrlForms(link, baseShortUrl, ownHosts);
 
   const utm = link.utmParameters;
   const hasUtm = utm && Object.values(utm).some(Boolean);
@@ -477,6 +470,15 @@ export function LinkDetail({ link, baseShortUrl, apiBaseUrl, onNavigate, renderU
           <InfoRow label="Short URL">
             <span className="font-mono text-xs break-all">{shortUrl}</span>
             <CopyButton value={shortUrl} />
+            {alternateShortUrl && (
+              <span className="basis-full text-xs text-gray-500 dark:text-gray-400">
+                <span className="flex items-center flex-wrap">
+                  Also works:&nbsp;<span className="font-mono break-all">{alternateShortUrl}</span>
+                  <CopyButton value={alternateShortUrl} />
+                </span>
+                <span className="block">Links shared in either form keep working.</span>
+              </span>
+            )}
           </InfoRow>
           {link.title && (
             <InfoRow label="Title">{link.title}</InfoRow>
@@ -563,7 +565,7 @@ export function LinkDetail({ link, baseShortUrl, apiBaseUrl, onNavigate, renderU
       )}
 
       {/* QR Code */}
-      <QRSection link={link} baseShortUrl={baseShortUrl} apiBaseUrl={apiBaseUrl} />
+      <QRSection link={link} shortUrl={shortUrl} apiBaseUrl={apiBaseUrl} />
 
       {/* Deep Link Info */}
       <div className="surface-popover rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">

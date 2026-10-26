@@ -4,6 +4,7 @@ import { Copy, ExternalLink, Target, BarChart3 } from 'lucide-react';
 import { format } from 'date-fns';
 import { projectPillClasses } from '../constants/projectColors';
 import { DEFAULT_SHORTLINK_ORIGIN } from '../constants/shortlink';
+import { shortUrlForms } from '../utils/shortUrl';
 
 interface LinkTableProps {
   /**
@@ -27,11 +28,16 @@ interface LinkTableProps {
    */
   onViewAnalytics?: (link: Link) => void;
   customDomain?: string;
+  /**
+   * Hostnames that belong to the workspace. On these, a templated link is shown
+   * and copied as the shorter `/{code}`. Omitted, the template form is always used.
+   */
+  ownHosts?: string[];
   selectedIds?: Set<string>;
   onSelectionChange?: (ids: Set<string>) => void;
 }
 
-export function LinkTable({ links, onInspect, onViewAnalytics, customDomain, selectedIds, onSelectionChange, defaultDomain }: LinkTableProps) {
+export function LinkTable({ links, onInspect, onViewAnalytics, customDomain, ownHosts, selectedIds, onSelectionChange, defaultDomain }: LinkTableProps) {
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const selectable = !!selectedIds && !!onSelectionChange;
 
@@ -48,13 +54,8 @@ export function LinkTable({ links, onInspect, onViewAnalytics, customDomain, sel
 
   const getShortUrl = (link: Link) => {
     // Per-link assigned domain wins, then the org default, then the platform default.
-    const host = link.domain || customDomain;
-    const domain = host ? `https://${host}` : (defaultDomain ? `https://${defaultDomain}` : DEFAULT_SHORTLINK_ORIGIN);
-
-    if (link.template_slug) {
-      return `${domain}/${link.template_slug}/${link.short_code}`;
-    }
-    return `${domain}/${link.short_code}`;
+    const host = customDomain || defaultDomain;
+    return shortUrlForms(link, host ? `https://${host}` : DEFAULT_SHORTLINK_ORIGIN, ownHosts).primary;
   };
 
   const allSelected = selectable && links.length > 0 && links.every(l => selectedIds!.has(l.id));
