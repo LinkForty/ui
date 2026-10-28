@@ -931,7 +931,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                   <div>
                     <h4 className="text-base font-semibold text-gray-900 dark:text-white">Targeting Rules</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      Optional: Restrict this link to specific audiences
+                      Optional. Visitors who don’t match these rules see the not-found page instead of the link’s destination.
                     </p>
                   </div>
 
