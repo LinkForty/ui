@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.2] - 2026-11-03
+
+### Changed
+
+- Sample values in a Storybook story. Stories are not published, so the package contents are unchanged.
+
 ## [3.2.1] - 2026-10-28
 
 ### Changed

@@ -23,16 +23,16 @@ type Story = StoryObj<typeof meta>;
 export const Card: Story = {
   args: {
     appConfig: {
-      appScheme: 'ridealert',
+      appScheme: 'exampleapp',
       iosTeamId: 'ABCDE12345',
-      iosBundleId: 'app.ridealert.ios',
-      androidPackageName: 'app.ridealert.android',
+      iosBundleId: 'app.exampleapp.ios',
+      androidPackageName: 'app.exampleapp.android',
       androidSha256Fingerprints: ['AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99'],
-      iosUniversalLinkDomain: 'go.ridealert.app',
-      androidAppLinkDomain: 'go.ridealert.app',
+      iosUniversalLinkDomain: 'go.exampleapp.example',
+      androidAppLinkDomain: 'go.exampleapp.example',
       iosAppStoreUrl: 'https://apps.apple.com/app/id1',
-      androidAppStoreUrl: 'https://play.google.com/store/apps/details?id=app.ridealert.android',
-      webFallbackUrl: 'https://ridealert.app',
+      androidAppStoreUrl: 'https://play.google.com/store/apps/details?id=app.exampleapp.android',
+      webFallbackUrl: 'https://exampleapp.example',
     },
   },
 };
