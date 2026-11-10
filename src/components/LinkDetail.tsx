@@ -153,6 +153,22 @@ const QR_SIZES = [
 ] as const;
 type QRSize = typeof QR_SIZES[number]['value'];
 
+/**
+ * How long the colors must stay unchanged before the preview asks for a new image.
+ * A color picker reports every step of a drag, and each new color is a new image.
+ */
+const QR_PREVIEW_DELAY_MS = 250;
+
+/** `value`, once it has stayed the same for `delayMs`. */
+function useSettledValue<T>(value: T, delayMs: number): T {
+  const [settled, setSettled] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setSettled(value), delayMs);
+    return () => clearTimeout(timer);
+  }, [value, delayMs]);
+  return settled;
+}
+
 const LAUNCHPAD_PERIODS = [7, 30, 90] as const;
 type LaunchpadPeriod = (typeof LAUNCHPAD_PERIODS)[number];
 
@@ -280,7 +296,14 @@ function QRSection({
   const [color, setColor] = useState('#000000');
   const [bgcolor, setBgcolor] = useState('#ffffff');
 
-  const qrUrl = `${apiBaseUrl}/api/links/${link.id}/qr?format=${format}&size=${size}&color=${encodeURIComponent(color)}&bgcolor=${encodeURIComponent(bgcolor)}&url=${encodeURIComponent(shortUrl)}`;
+  const previewColor = useSettledValue(color, QR_PREVIEW_DELAY_MS);
+  const previewBgcolor = useSettledValue(bgcolor, QR_PREVIEW_DELAY_MS);
+
+  const qrImageUrl = (foreground: string, background: string) =>
+    `${apiBaseUrl}/api/links/${link.id}/qr?format=${format}&size=${size}&color=${encodeURIComponent(foreground)}&bgcolor=${encodeURIComponent(background)}&url=${encodeURIComponent(shortUrl)}`;
+  // The download always uses the colors as chosen, even within the preview delay.
+  const qrUrl = qrImageUrl(color, bgcolor);
+  const previewUrl = qrImageUrl(previewColor, previewBgcolor);
 
   const handleDownload = async () => {
     try {
@@ -307,7 +330,7 @@ function QRSection({
         {/* Preview */}
         <div className="surface-table-header flex justify-center items-center p-6 rounded-lg">
           <img
-            src={qrUrl}
+            src={previewUrl}
             alt={`QR code for ${link.short_code}`}
             className="max-w-full h-auto"
             style={{ maxHeight: '280px' }}

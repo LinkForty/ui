@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.3] - 2026-11-07
+
+### Changed
+
+- `LinkDetail` updates the QR preview 250 ms after the foreground or background color stops changing, instead of requesting a new image for every step of a color-picker drag. Downloads always use the colors as chosen.
+
 ## [3.2.2] - 2026-11-03
 
 ### Changed
