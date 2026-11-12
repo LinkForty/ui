@@ -340,7 +340,14 @@ function qrMayNotScan(foreground: string, background: string): boolean {
 }
 
 function sameDesign(a: QrDesign, b: QrDesign): boolean {
-  return a.dots === b.dots && a.corners === b.corners && a.cornerColor === b.cornerColor && a.logo === b.logo && a.logoKey === b.logoKey;
+  return (
+    a.dots === b.dots &&
+    a.corners === b.corners &&
+    a.cornerColor === b.cornerColor &&
+    a.logo === b.logo &&
+    a.logoKey === b.logoKey &&
+    (a.logoBackground ?? null) === (b.logoBackground ?? null)
+  );
 }
 
 function Segmented<T extends string>({
@@ -411,12 +418,13 @@ function QRSection({
   const previewColor = useSettledValue(color, QR_PREVIEW_DELAY_MS);
   const previewBgcolor = useSettledValue(bgcolor, QR_PREVIEW_DELAY_MS);
   const previewCornerColor = useSettledValue(design.cornerColor, QR_PREVIEW_DELAY_MS);
+  const previewLogoBackground = useSettledValue(design.logoBackground ?? null, QR_PREVIEW_DELAY_MS);
 
   // Every style option is sent, never left to the saved styles, so the image
   // is the one on screen whatever is saved and whatever a cache holds.
-  const qrImageUrl = (foreground: string, background: string, corner: string | null) => {
+  const qrImageUrl = (foreground: string, background: string, corner: string | null, tile: string | null) => {
     const params = new URLSearchParams({ format, size: String(size), color: foreground, bgcolor: background, url: shortUrl });
-    if (sameDesign({ ...design, cornerColor: corner }, PLAIN_QR)) {
+    if (sameDesign({ ...design, cornerColor: corner, logoBackground: tile }, PLAIN_QR)) {
       params.set('style', 'plain');
     } else {
       params.set('dots', design.dots);
@@ -424,12 +432,13 @@ function QRSection({
       params.set('cornerColor', corner ?? foreground);
       params.set('logo', design.logo);
       if (design.logo === 'custom' && design.logoKey) params.set('logoKey', design.logoKey);
+      params.set('logoBackground', tile ?? 'none');
     }
     return `${apiBaseUrl}/api/links/${link.id}/qr?${params.toString()}`;
   };
   // The download always uses the colors as chosen, even within the preview delay.
-  const qrUrl = qrImageUrl(color, bgcolor, design.cornerColor);
-  const previewUrl = qrImageUrl(previewColor, previewBgcolor, previewCornerColor);
+  const qrUrl = qrImageUrl(color, bgcolor, design.cornerColor, design.logoBackground ?? null);
+  const previewUrl = qrImageUrl(previewColor, previewBgcolor, previewCornerColor, previewLogoBackground);
   const lowContrast = qrMayNotScan(color, bgcolor) || (design.cornerColor !== null && qrMayNotScan(design.cornerColor, bgcolor));
 
   const update = (change: Partial<QrDesign>) => {
@@ -590,6 +599,28 @@ function QRSection({
                 </>
               )}
             </div>
+            {design.logo !== 'none' && (
+              <div className="flex items-center gap-3 mt-3">
+                <label className="flex items-center gap-1.5 text-sm text-gray-700 dark:text-gray-200 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!!design.logoBackground}
+                    onChange={(e) => update({ logoBackground: e.target.checked ? '#111111' : null })}
+                    className="h-4 w-4 rounded border-gray-300 dark:border-gray-700 text-brand focus:ring-brand"
+                  />
+                  Background behind the logo
+                </label>
+                {design.logoBackground && (
+                  <input
+                    type="color"
+                    aria-label="Logo background color"
+                    value={design.logoBackground}
+                    onChange={(e) => update({ logoBackground: e.target.value.toLowerCase() })}
+                    className="h-9 w-14 border border-gray-300 dark:border-gray-700 rounded cursor-pointer flex-shrink-0"
+                  />
+                )}
+              </div>
+            )}
           </div>
         </div>
 

@@ -12,6 +12,8 @@ export interface QrDesign {
   bgcolor?: string;
   logo: 'none' | 'brand' | 'custom';
   logoKey?: string;
+  /** A rounded tile of this color behind the logo; null or absent, none. */
+  logoBackground?: string | null;
 }
 
 export interface Link {

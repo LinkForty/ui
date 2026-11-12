@@ -127,3 +127,14 @@ export const QrSaveFails: Story = {
     },
   },
 };
+
+/** A white logo on a dark tile behind it, as for a brand whose logo is made for dark pages. */
+export const QrLogoOnTile: Story = {
+  args: {
+    ...QrWorkspaceDefault.args,
+    link: {
+      ...mockLink,
+      qr_design: { dots: 'dots', corners: 'rounded', cornerColor: '#0b1f3a', logo: 'brand', logoBackground: '#0b1f3a' },
+    },
+  },
+};

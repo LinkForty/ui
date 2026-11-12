@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-11-12
+
+### Added
+
+- `LinkDetail`'s QR panel can put a rounded tile in any color behind the logo ("Background behind the logo"), so a white or light logo works on a dark-on-light code. It is off by default, goes in the preview and download URL, and is saved with the design.
+- `logoBackground` on `QrDesign`.
+
 ## [3.3.0] - 2026-11-11
 
 ### Added
