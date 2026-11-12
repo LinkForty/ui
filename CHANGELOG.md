@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-11-11
+
+### Added
+
+- `LinkDetail`'s QR panel styles the code: dots (square, rounded or dots), corners (square, rounded or circle), a corner color or "Same color as the dots", and a logo in the center (none, the brand logo, or one uploaded for the link). A saved design keeps the foreground and background colors too. Every style option goes in the preview and download URL, so the image is always the one on screen.
+- A warning under the preview when the foreground is lighter than the background or their contrast is under 4:1, which many scanners can't read. It doesn't block the download.
+- `LinkDetail` props `qrDefaults` (the style a link without its own design starts from), `brandLogoUrl` (offers the brand logo), `onSaveQrDesign` (shows "Save for this link" and "Reset to workspace default") and `onUploadQrLogo` (shows "Upload…"). All are optional; without the callbacks the panel styles downloads only.
+- `QrDesign` type (with optional `color` and `bgcolor`), and `qr_design` on `Link`.
+
 ## [3.2.3] - 2026-11-07
 
 ### Changed

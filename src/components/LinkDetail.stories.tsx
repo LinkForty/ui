@@ -81,3 +81,49 @@ export const LaunchpadNoViewsYet: Story = {
     }),
   },
 };
+
+const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** The workspace has a QR style and a brand logo; the link has no design of its own, so the panel starts from the workspace's. */
+export const QrWorkspaceDefault: Story = {
+  args: {
+    ...baseArgs,
+    qrDefaults: { dots: 'dots', corners: 'rounded', cornerColor: '#1e6b4a', logo: 'brand' },
+    brandLogoUrl: 'https://example.com/logo.png',
+    onSaveQrDesign: async () => pause(400),
+    onUploadQrLogo: async () => {
+      await pause(400);
+      return { logoKey: 'uploads/qr-logo.png' };
+    },
+  },
+};
+
+/** The link has its own design with an uploaded logo. */
+export const QrLinkDesign: Story = {
+  args: {
+    ...QrWorkspaceDefault.args,
+    link: {
+      ...mockLink,
+      qr_design: { dots: 'rounded', corners: 'circle', cornerColor: null, logo: 'custom', logoKey: 'uploads/qr-logo.png' },
+    },
+  },
+};
+
+/** No save or upload callbacks, as for a viewer: the controls style the download only. */
+export const QrDownloadOnly: Story = {
+  args: {
+    ...baseArgs,
+    qrDefaults: { dots: 'dots', corners: 'circle', cornerColor: null, logo: 'none' },
+  },
+};
+
+/** The save fails: the panel says so and keeps the choices. */
+export const QrSaveFails: Story = {
+  args: {
+    ...QrWorkspaceDefault.args,
+    onSaveQrDesign: async () => {
+      await pause(400);
+      throw new Error('save failed');
+    },
+  },
+};

@@ -1,6 +1,6 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Copy, Check, Download, ExternalLink } from 'lucide-react';
-import { Link } from '../types';
+import { Link, type QrDesign } from '../types';
 import { shortUrlForms } from '../utils/shortUrl';
 
 const COUNTRY_OPTIONS = [
@@ -85,6 +85,24 @@ export interface LinkDetailProps {
    * form listed under it. Omitted, the template form is always used.
    */
   ownHosts?: string[];
+  /**
+   * The workspace's QR style, where the QR panel starts for a link with no
+   * design of its own and what "Reset to workspace default" goes back to.
+   * Omitted, that is a plain code.
+   */
+  qrDefaults?: QrDesign;
+  /** The workspace's brand logo. When set, the QR panel offers it for the center. */
+  brandLogoUrl?: string;
+  /**
+   * Saves the QR design on the link; `null` clears it so the workspace style
+   * applies. Omitted (a viewer, say), the panel styles downloads only.
+   */
+  onSaveQrDesign?: (design: QrDesign | null) => Promise<void>;
+  /**
+   * Uploads a PNG or JPEG as this link's QR logo and returns its key. Omitted,
+   * the panel offers no upload.
+   */
+  onUploadQrLogo?: (file: File) => Promise<{ logoKey: string; previewUrl?: string }>;
 }
 
 function formatDate(dateStr: string) {
@@ -282,28 +300,187 @@ function LaunchpadSection({
   );
 }
 
+const PLAIN_QR: QrDesign = { dots: 'square', corners: 'square', cornerColor: null, logo: 'none' };
+/** The color form a saved design takes. */
+const SAVED_HEX = /^#[0-9a-f]{6}$/i;
+
+const DOT_OPTIONS: Array<{ value: QrDesign['dots']; label: string }> = [
+  { value: 'square', label: 'Square' },
+  { value: 'rounded', label: 'Rounded' },
+  { value: 'dots', label: 'Dots' },
+];
+const CORNER_OPTIONS: Array<{ value: QrDesign['corners']; label: string }> = [
+  { value: 'square', label: 'Square' },
+  { value: 'rounded', label: 'Rounded' },
+  { value: 'circle', label: 'Circle' },
+];
+
+/** WCAG relative luminance of a #rgb or #rrggbb color; null for anything else. */
+function relativeLuminance(color: string): number | null {
+  const hex = color.trim().replace(/^#/, '');
+  const full = /^[0-9a-f]{3}$/i.test(hex) ? hex.split('').map((c) => c + c).join('') : hex;
+  if (!/^[0-9a-f]{6}$/i.test(full)) return null;
+  const [r, g, b] = [0, 2, 4].map((i) => {
+    const c = parseInt(full.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/**
+ * Whether a dark-on-light reading of these colors is in doubt: the foreground
+ * lighter than the background, or less than 4:1 contrast between them. Most
+ * scanners look for dark modules on a light ground.
+ */
+function qrMayNotScan(foreground: string, background: string): boolean {
+  const fg = relativeLuminance(foreground);
+  const bg = relativeLuminance(background);
+  if (fg === null || bg === null) return false;
+  return fg > bg || (bg + 0.05) / (fg + 0.05) < 4;
+}
+
+function sameDesign(a: QrDesign, b: QrDesign): boolean {
+  return a.dots === b.dots && a.corners === b.corners && a.cornerColor === b.cornerColor && a.logo === b.logo && a.logoKey === b.logoKey;
+}
+
+function Segmented<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: Array<{ value: T; label: string }>;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <div>
+      <span className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{label}</span>
+      <div role="radiogroup" aria-label={label} className="inline-flex rounded-md border border-gray-300 dark:border-gray-700 overflow-hidden">
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            role="radio"
+            aria-checked={value === option.value}
+            onClick={() => onChange(option.value)}
+            className={`px-3 py-1.5 text-sm border-l first:border-l-0 border-gray-300 dark:border-gray-700 ${
+              value === option.value
+                ? 'bg-brand text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function QRSection({
   link,
   shortUrl,
   apiBaseUrl,
+  qrDefaults,
+  brandLogoUrl,
+  onSaveQrDesign,
+  onUploadQrLogo,
 }: {
   link: DiscoveredLink;
   shortUrl: string;
   apiBaseUrl: string;
+  qrDefaults?: QrDesign;
+  brandLogoUrl?: string;
+  onSaveQrDesign?: (design: QrDesign | null) => Promise<void>;
+  onUploadQrLogo?: (file: File) => Promise<{ logoKey: string; previewUrl?: string }>;
 }) {
+  const workspaceDesign = qrDefaults ?? PLAIN_QR;
   const [format, setFormat] = useState<'png' | 'svg'>('png');
   const [size, setSize] = useState<QRSize>(512);
-  const [color, setColor] = useState('#000000');
-  const [bgcolor, setBgcolor] = useState('#ffffff');
+  const startDesign = link.qr_design ?? workspaceDesign;
+  const [color, setColor] = useState(startDesign.color ?? '#000000');
+  const [bgcolor, setBgcolor] = useState(startDesign.bgcolor ?? '#ffffff');
+  const [design, setDesign] = useState<QrDesign>(startDesign);
+  // The custom logo stays selectable after switching away from it, until another upload replaces it.
+  const [customLogoKey, setCustomLogoKey] = useState<string | undefined>(link.qr_design?.logoKey);
+  const [status, setStatus] = useState<{ kind: 'idle' | 'busy' | 'saved' | 'error'; message?: string }>({ kind: 'idle' });
+  const fileInput = useRef<HTMLInputElement>(null);
 
   const previewColor = useSettledValue(color, QR_PREVIEW_DELAY_MS);
   const previewBgcolor = useSettledValue(bgcolor, QR_PREVIEW_DELAY_MS);
+  const previewCornerColor = useSettledValue(design.cornerColor, QR_PREVIEW_DELAY_MS);
 
-  const qrImageUrl = (foreground: string, background: string) =>
-    `${apiBaseUrl}/api/links/${link.id}/qr?format=${format}&size=${size}&color=${encodeURIComponent(foreground)}&bgcolor=${encodeURIComponent(background)}&url=${encodeURIComponent(shortUrl)}`;
+  // Every style option is sent, never left to the saved styles, so the image
+  // is the one on screen whatever is saved and whatever a cache holds.
+  const qrImageUrl = (foreground: string, background: string, corner: string | null) => {
+    const params = new URLSearchParams({ format, size: String(size), color: foreground, bgcolor: background, url: shortUrl });
+    if (sameDesign({ ...design, cornerColor: corner }, PLAIN_QR)) {
+      params.set('style', 'plain');
+    } else {
+      params.set('dots', design.dots);
+      params.set('corners', design.corners);
+      params.set('cornerColor', corner ?? foreground);
+      params.set('logo', design.logo);
+      if (design.logo === 'custom' && design.logoKey) params.set('logoKey', design.logoKey);
+    }
+    return `${apiBaseUrl}/api/links/${link.id}/qr?${params.toString()}`;
+  };
   // The download always uses the colors as chosen, even within the preview delay.
-  const qrUrl = qrImageUrl(color, bgcolor);
-  const previewUrl = qrImageUrl(previewColor, previewBgcolor);
+  const qrUrl = qrImageUrl(color, bgcolor, design.cornerColor);
+  const previewUrl = qrImageUrl(previewColor, previewBgcolor, previewCornerColor);
+  const lowContrast = qrMayNotScan(color, bgcolor) || (design.cornerColor !== null && qrMayNotScan(design.cornerColor, bgcolor));
+
+  const update = (change: Partial<QrDesign>) => {
+    setDesign((current) => {
+      const next = { ...current, ...change };
+      if (next.logo !== 'custom') delete next.logoKey;
+      return next;
+    });
+    setStatus({ kind: 'idle' });
+  };
+
+  const handleUpload = async (file: File | undefined) => {
+    if (!file || !onUploadQrLogo) return;
+    if (!['image/png', 'image/jpeg'].includes(file.type)) {
+      setStatus({ kind: 'error', message: 'Choose a PNG or JPEG image.' });
+      return;
+    }
+    setStatus({ kind: 'busy', message: 'Uploading…' });
+    try {
+      const { logoKey } = await onUploadQrLogo(file);
+      setCustomLogoKey(logoKey);
+      setDesign((current) => ({ ...current, logo: 'custom', logoKey }));
+      setStatus({ kind: 'idle' });
+    } catch {
+      setStatus({ kind: 'error', message: 'The logo could not be uploaded. Try again.' });
+    } finally {
+      if (fileInput.current) fileInput.current.value = '';
+    }
+  };
+
+  const save = async (value: QrDesign | null) => {
+    if (!onSaveQrDesign) return;
+    if (value && !(SAVED_HEX.test(color) && SAVED_HEX.test(bgcolor))) {
+      setStatus({ kind: 'error', message: 'To save the colors, write them as #rrggbb, like #1a2b3c.' });
+      return;
+    }
+    setStatus({ kind: 'busy', message: 'Saving…' });
+    try {
+      await onSaveQrDesign(value && { ...value, color: color.toLowerCase(), bgcolor: bgcolor.toLowerCase() });
+      if (value === null) {
+        setDesign(workspaceDesign);
+        setColor(workspaceDesign.color ?? '#000000');
+        setBgcolor(workspaceDesign.bgcolor ?? '#ffffff');
+        setStatus({ kind: 'saved', message: 'Using the workspace default.' });
+      } else {
+        setStatus({ kind: 'saved', message: 'Saved for this link.' });
+      }
+    } catch {
+      setStatus({ kind: 'error', message: 'The design could not be saved. Try again.' });
+    }
+  };
 
   const handleDownload = async () => {
     try {
@@ -323,6 +500,10 @@ function QRSection({
     }
   };
 
+  const logoOptions: Array<{ value: QrDesign['logo']; label: string }> = [{ value: 'none', label: 'None' }];
+  if (brandLogoUrl || design.logo === 'brand') logoOptions.push({ value: 'brand', label: 'Brand kit' });
+  if (customLogoKey) logoOptions.push({ value: 'custom', label: 'This link’s logo' });
+
   return (
     <div className="surface-popover rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
       <SectionHeader title="QR Code" />
@@ -335,6 +516,81 @@ function QRSection({
             className="max-w-full h-auto"
             style={{ maxHeight: '280px' }}
           />
+        </div>
+
+        {lowContrast && (
+          <p role="status" className="text-sm text-amber-700 dark:text-amber-400">
+            This may not scan: most scanners need a dark code on a light background, with strong contrast between them.
+          </p>
+        )}
+
+        {/* Style */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Segmented label="Dots" value={design.dots} options={DOT_OPTIONS} onChange={(dots) => update({ dots })} />
+          <Segmented label="Corners" value={design.corners} options={CORNER_OPTIONS} onChange={(corners) => update({ corners })} />
+
+          {/* Corner color */}
+          <div>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+              Corner color
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                aria-label="Corner color"
+                value={design.cornerColor ?? color}
+                onChange={(e) => update({ cornerColor: e.target.value.toLowerCase() })}
+                className="h-9 w-14 border border-gray-300 dark:border-gray-700 rounded cursor-pointer flex-shrink-0"
+              />
+              <label className="flex items-center gap-1.5 text-sm text-gray-700 dark:text-gray-200 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={design.cornerColor === null}
+                  onChange={(e) => update({ cornerColor: e.target.checked ? null : color.toLowerCase() })}
+                  className="h-4 w-4 rounded border-gray-300 dark:border-gray-700 text-brand focus:ring-brand"
+                />
+                Same color as the dots
+              </label>
+            </div>
+          </div>
+
+          {/* Logo */}
+          <div>
+            <span className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Logo</span>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              {logoOptions.map((option) => (
+                <label key={option.value} className="flex items-center gap-1.5 cursor-pointer">
+                  <input
+                    type="radio"
+                    name={`qr-logo-${link.id}`}
+                    checked={design.logo === option.value}
+                    onChange={() => update(option.value === 'custom' ? { logo: 'custom', logoKey: customLogoKey } : { logo: option.value })}
+                    className="h-4 w-4 text-brand border-gray-300 dark:border-gray-700 focus:ring-brand"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-200">{option.label}</span>
+                </label>
+              ))}
+              {onUploadQrLogo && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => fileInput.current?.click()}
+                    disabled={status.kind === 'busy'}
+                    className="text-sm font-medium text-brand hover:underline disabled:opacity-50"
+                  >
+                    Upload…
+                  </button>
+                  <input
+                    ref={fileInput}
+                    type="file"
+                    accept="image/png,image/jpeg"
+                    className="hidden"
+                    onChange={(e) => handleUpload(e.target.files?.[0])}
+                  />
+                </>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Controls */}
@@ -421,8 +677,36 @@ function QRSection({
           </div>
         </div>
 
-        {/* Download */}
-        <div className="flex justify-end">
+        {/* Save and download */}
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          {status.message && (
+            <span
+              role="status"
+              className={`mr-auto text-sm ${status.kind === 'error' ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}
+            >
+              {status.message}
+            </span>
+          )}
+          {onSaveQrDesign && (
+            <>
+              <button
+                type="button"
+                onClick={() => save(null)}
+                disabled={status.kind === 'busy'}
+                className="px-4 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+              >
+                Reset to workspace default
+              </button>
+              <button
+                type="button"
+                onClick={() => save(design)}
+                disabled={status.kind === 'busy'}
+                className="px-4 py-1.5 text-sm font-semibold text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+              >
+                Save for this link
+              </button>
+            </>
+          )}
           <button
             onClick={handleDownload}
             className="inline-flex items-center gap-1.5 px-5 py-1.5 text-sm font-semibold text-white btn-primary rounded-lg"
@@ -436,7 +720,19 @@ function QRSection({
   );
 }
 
-export function LinkDetail({ link, baseShortUrl, apiBaseUrl, onNavigate, renderUtmValue, fetchLaunchpadStats, ownHosts }: LinkDetailProps) {
+export function LinkDetail({
+  link,
+  baseShortUrl,
+  apiBaseUrl,
+  onNavigate,
+  renderUtmValue,
+  fetchLaunchpadStats,
+  ownHosts,
+  qrDefaults,
+  brandLogoUrl,
+  onSaveQrDesign,
+  onUploadQrLogo,
+}: LinkDetailProps) {
   const { primary: shortUrl, alternate: alternateShortUrl } = shortUrlForms(link, baseShortUrl, ownHosts);
 
   const utm = link.utmParameters;
@@ -588,7 +884,15 @@ export function LinkDetail({ link, baseShortUrl, apiBaseUrl, onNavigate, renderU
       )}
 
       {/* QR Code */}
-      <QRSection link={link} shortUrl={shortUrl} apiBaseUrl={apiBaseUrl} />
+      <QRSection
+        link={link}
+        shortUrl={shortUrl}
+        apiBaseUrl={apiBaseUrl}
+        qrDefaults={qrDefaults}
+        brandLogoUrl={brandLogoUrl}
+        onSaveQrDesign={onSaveQrDesign}
+        onUploadQrLogo={onUploadQrLogo}
+      />
 
       {/* Deep Link Info */}
       <div className="surface-popover rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">

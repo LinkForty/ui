@@ -1,3 +1,19 @@
+/**
+ * How a QR code is drawn. `color` and `bgcolor` are the foreground and
+ * background (`#rrggbb`; omitted, black on white). `cornerColor` null draws
+ * the corners in the foreground color. `logo` is `brand` for the workspace's brand logo, or
+ * `custom` for an image uploaded for one link, stored at `logoKey`.
+ */
+export interface QrDesign {
+  dots: 'square' | 'rounded' | 'dots';
+  corners: 'square' | 'rounded' | 'circle';
+  cornerColor: string | null;
+  color?: string;
+  bgcolor?: string;
+  logo: 'none' | 'brand' | 'custom';
+  logoKey?: string;
+}
+
 export interface Link {
   id: string;
   userId: string;
@@ -23,6 +39,8 @@ export interface Link {
   // shows the page to desktop visitors even when the link has a web
   // destination, 'off' never shows it. Column is @linkforty/core's.
   launchpad_mode?: 'inherit' | 'on' | 'off';
+  /** The link's own QR design; null or absent draws the workspace's style. */
+  qr_design?: QrDesign | null;
   // Existing fields
   utmParameters?: UTMParameters;
   targeting_rules?: TargetingRules;
@@ -102,6 +120,8 @@ export interface UpdateLinkRequest extends Omit<Partial<CreateLinkRequest>, 'exp
   isActive?: boolean;
   // null explicitly clears an existing expiration date
   expiresAt?: string | null;
+  /** The link's own QR design; null goes back to the workspace's QR style. */
+  qrDesign?: QrDesign | null;
 }
 
 // Verified custom domain offered in the link modals' Domain select
