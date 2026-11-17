@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 import { CreateLinkModal } from './CreateLinkModal';
-import { CreateLinkRequest } from '../types';
+import { CreateLinkRequest, LinkTemplate } from '../types';
 
 const meta = {
   title: 'Components/CreateLinkModal',
@@ -51,5 +51,24 @@ export const Loading: Story = {
   render: (args) => <ModalWrapper {...args} />,
   args: {
     isLoading: true,
+  },
+};
+
+const newsletterTemplate: LinkTemplate = {
+  id: 'tpl-newsletter',
+  name: 'Newsletter',
+  slug: 'news',
+  settings: { channel: 'email', utmParameters: { source: 'newsletter', medium: 'email' } },
+  is_default: false,
+  created_at: '2026-11-01T00:00:00Z',
+  updated_at: '2026-11-01T00:00:00Z',
+};
+
+/** Picking the Newsletter template pre-selects its channel, "Email, push or SMS". */
+export const TemplateWithChannel: Story = {
+  render: (args) => <ModalWrapper {...args} />,
+  args: {
+    isLoading: false,
+    templates: [newsletterTemplate],
   },
 };

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.0] - 2026-11-15
+
+### Added
+
+- A channel picker ("Where will this link go?") in `CreateLinkModal` and `EditLinkModal`: email, push or SMS; bio or social; website; QR or print; or product link. Choosing a template with a channel pre-selects it, and "Not set" leaves it to the template or UTM medium on create and clears it on edit. A link an app created for a user to share shows "User share (created by your app)" and is not editable.
+- The `LinkChannel` type, `channel` on `Link`, `CreateLinkRequest`, `UpdateLinkRequest` and template settings, and `LINK_CHANNEL_OPTIONS` and `linkChannelLabel()`.
+
+### Fixed
+
+- `EditLinkModal` keeps what was typed when the host re-renders. It reloads the form from the link only when the link, the open state or the offered domains change, not whenever a new `domains` array is passed or the prop is left out.
+
 ## [3.4.0] - 2026-11-12
 
 ### Added

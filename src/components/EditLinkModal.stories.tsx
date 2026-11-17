@@ -102,3 +102,21 @@ export const LaunchpadOff: Story = {
     isLoading: false,
   },
 };
+
+/** A link placed in a QR code; the channel select shows "QR or print". */
+export const WithChannel: Story = {
+  render: (args) => <ModalWrapper {...args} />,
+  args: {
+    link: { ...mockLink, id: '4', short_code: 'flyer', channel: 'qr_print' },
+    isLoading: false,
+  },
+};
+
+/** A link the app created for a user to share; the channel is shown, not editable. */
+export const UserShare: Story = {
+  render: (args) => <ModalWrapper {...args} />,
+  args: {
+    link: { ...mockLink, id: '5', short_code: 'invite-a1', channel: 'user_share' },
+    isLoading: false,
+  },
+};

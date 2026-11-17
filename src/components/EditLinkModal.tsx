@@ -6,6 +6,8 @@ import { X, Plus, Trash2, Info } from 'lucide-react';
 import { Link, UpdateLinkRequest, LinkTemplate, Project, CustomDomainOption } from '../types';
 import { DEFAULT_SHORTLINK_DOMAIN } from '../constants/shortlink';
 import { DEFAULT_INSTALL_WINDOW, installWindowFields, installWindowOptions, installWindowValue } from '../constants/installWindow';
+import { LINK_CHANNEL_OPTIONS } from '../constants/linkChannels';
+import { LinkChannelField } from './LinkChannelField';
 
 const updateLinkSchema = z.object({
   // .nullable() so that clearing the dropdown sends null (not undefined) and the PUT
@@ -47,6 +49,8 @@ const updateLinkSchema = z.object({
   ),
   appendClickId: z.boolean().optional(),
   launchpadMode: z.enum(['inherit', 'on', 'off']).optional(),
+  // '' = not set; saving it clears the link's channel.
+  channel: z.union([z.enum(LINK_CHANNEL_OPTIONS.map((o) => o.value) as [string, ...string[]]), z.literal('')]).optional(),
   // datetime-local input value ("YYYY-MM-DDTHH:mm" in the user's timezone);
   // converted to ISO on submit. Empty string = no expiration.
   expiresAt: z.string().optional(),
@@ -137,6 +141,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<UpdateLinkFormData>({
     resolver: zodResolver(updateLinkSchema),
@@ -144,6 +149,10 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
 
   // The link's own window is listed even when it isn't a preset, so a save keeps it.
   const linkInstallWindow = link ? installWindowValue(link.attribution_window_minutes, link.attribution_window_hours) : undefined;
+
+  // The form loads from the link when it opens, and again only when the link or
+  // the offered domains change, so a re-render never discards what was typed.
+  const domainIds = domains.map((d) => d.id).join(',');
 
   useEffect(() => {
     if (link && isOpen) {
@@ -183,6 +192,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
       // Cloud links default to appending the click id; only an explicit false unchecks.
       setValue('appendClickId', link.append_click_id !== false);
       setValue('launchpadMode', link.launchpad_mode ?? 'inherit');
+      setValue('channel', link.channel && link.channel !== 'user_share' ? link.channel : '');
       setValue('expiresAt', link.expires_at ? toDateTimeLocalValue(link.expires_at) : '');
       setValue('utmSource', link.utmParameters?.source || '');
       setValue('utmMedium', link.utmParameters?.medium || '');
@@ -198,7 +208,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
       // Auto-detect if link uses push notification mode
       setUsePushNotification(!!link.custom_scheme_url);
     }
-  }, [link, isOpen, setValue, domains]);
+  }, [link, isOpen, setValue, domainIds]);
 
   const handleFormSubmit = async (data: UpdateLinkFormData) => {
     // Build deep link parameters object from dynamic array
@@ -235,6 +245,8 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
       eventAttributionWindowHours: data.eventAttributionWindowHours,
       appendClickId: data.appendClickId,
       launchpadMode: data.launchpadMode,
+      // Not set clears it; a user share made by the app is left as it is.
+      ...(link?.channel === 'user_share' ? {} : { channel: (data.channel || null) as UpdateLinkRequest['channel'] }),
       // ISO for the API; null explicitly clears an existing expiration
       expiresAt: data.expiresAt ? new Date(data.expiresAt).toISOString() : null,
       // Only send UTM parameters if at least one field has a value
@@ -855,6 +867,14 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                     </p>
                   </div>
                 </div>
+
+                <LinkChannelField
+                  id="edit-channel"
+                  registration={register('channel')}
+                  value={watch('channel')}
+                  emptyHint="Groups this link's results by channel."
+                  userShare={link.channel === 'user_share'}
+                />
 
                 {/* UTM Parameters Section */}
                 <div className="surface-sunken space-y-4 p-4 rounded-lg border">

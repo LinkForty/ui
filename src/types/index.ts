@@ -16,6 +16,9 @@ export interface QrDesign {
   logoBackground?: string | null;
 }
 
+/** Where a link is placed, used to group results. `user_share` is set for links an app creates through the SDK. */
+export type LinkChannel = 'email' | 'bio_social' | 'website' | 'qr_print' | 'user_share' | 'product';
+
 export interface Link {
   id: string;
   userId: string;
@@ -68,6 +71,8 @@ export interface Link {
   // Resolved by the API: assigned domain → org default → platform,
   // with the template slug. Absent only on rows cached before it shipped.
   short_url?: string;
+  /** Where the link is placed; null when unassigned. */
+  channel?: LinkChannel | null;
 }
 
 export interface UTMParameters {
@@ -116,6 +121,8 @@ export interface CreateLinkRequest {
   launchpadMode?: 'inherit' | 'on' | 'off';
   customCode?: string;
   expiresAt?: string;
+  /** Where the link is placed. Omitted, the API takes the template's channel, else the one utm_medium names. */
+  channel?: LinkChannel | null;
 }
 
 export interface UpdateLinkRequest extends Omit<Partial<CreateLinkRequest>, 'expiresAt'> {
@@ -172,6 +179,8 @@ export interface LinkTemplate {
     // Default targeting rules (can be overridden per link)
     targetingRules?: TargetingRules;
     expiresAfterDays?: number;
+    // Default channel for links made from this template (can be overridden per link)
+    channel?: LinkChannel | null;
   };
   is_default: boolean;
   created_at: string;

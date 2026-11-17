@@ -6,6 +6,8 @@ import { X, Plus, Trash2, Info } from 'lucide-react';
 import { CreateLinkRequest, LinkTemplate, AppConfig, Project, CustomDomainOption } from '../types';
 import { DEFAULT_SHORTLINK_DOMAIN } from '../constants/shortlink';
 import { DEFAULT_INSTALL_WINDOW, installWindowFields, installWindowOptions, installWindowValue } from '../constants/installWindow';
+import { LINK_CHANNEL_OPTIONS } from '../constants/linkChannels';
+import { LinkChannelField } from './LinkChannelField';
 
 const createLinkSchema = z.object({
   // .nullable() so that clearing the dropdown sends null (not undefined).
@@ -50,6 +52,8 @@ const createLinkSchema = z.object({
   ),
   appendClickId: z.boolean().optional(),
   launchpadMode: z.enum(['inherit', 'on', 'off']).optional(),
+  // '' = not set: the API takes the template's channel, else the one utm_medium names.
+  channel: z.union([z.enum(LINK_CHANNEL_OPTIONS.map((o) => o.value) as [string, ...string[]]), z.literal('')]).optional(),
   // datetime-local input value ("YYYY-MM-DDTHH:mm" in the user's timezone);
   // converted to ISO on submit. Empty string = no expiration.
   expiresAt: z.string().optional(),
@@ -138,7 +142,7 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading, template
   } = useForm<CreateLinkFormData>({
     resolver: zodResolver(createLinkSchema),
     // Click-id passthrough is on by default for Cloud links (web attribution).
-    defaultValues: { appendClickId: true, launchpadMode: 'inherit' },
+    defaultValues: { appendClickId: true, launchpadMode: 'inherit', channel: '' },
   });
 
   // Watch for template selection changes
@@ -231,6 +235,10 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading, template
     }
 
     // Apply UTM parameters from template (merge, don't override)
+    if (settings.channel && settings.channel !== 'user_share' && !watch('channel')) {
+      setValue('channel', settings.channel);
+    }
+
     if (settings.utmParameters) {
       if (settings.utmParameters.source && !watch('utmSource')) {
         setValue('utmSource', settings.utmParameters.source);
@@ -299,6 +307,8 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading, template
       eventAttributionWindowHours: data.eventAttributionWindowHours,
       appendClickId: data.appendClickId,
       launchpadMode: data.launchpadMode,
+      // Not set sends nothing, so the template or utm_medium can fill it in.
+      channel: (data.channel || undefined) as CreateLinkRequest['channel'],
       expiresAt: data.expiresAt ? new Date(data.expiresAt).toISOString() : undefined,
       // Only send UTM parameters if at least one field has a value
       utmParameters: (data.utmSource || data.utmMedium || data.utmCampaign || data.utmTerm || data.utmContent) ? {
@@ -938,6 +948,13 @@ export function CreateLinkModal({ isOpen, onClose, onSubmit, isLoading, template
                     </p>
                   </div>
                 </div>
+
+                <LinkChannelField
+                  id="create-channel"
+                  registration={register('channel')}
+                  value={watch('channel')}
+                  emptyHint="Groups this link's results by channel. Left unset, the template's channel or the UTM medium fills it in."
+                />
 
                 {/* UTM Parameters Section */}
                 <div className="surface-sunken space-y-4 p-4 rounded-lg border">
