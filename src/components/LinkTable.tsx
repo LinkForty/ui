@@ -6,6 +6,15 @@ import { projectPillClasses } from '../constants/projectColors';
 import { DEFAULT_SHORTLINK_ORIGIN } from '../constants/shortlink';
 import { shortUrlForms } from '../utils/shortUrl';
 
+/** A link's results for a period, as the host app computed them. */
+export interface LinkResultFigures {
+  /** Installs that came from the link's clicks. */
+  newInstalls: number;
+  conversions: number;
+  /** Revenue already formatted by the host, e.g. "$1,204.50" or "$300 + €40"; "—" for none. */
+  revenueLabel: string;
+}
+
 interface LinkTableProps {
   /**
    * The short-link host this deployment serves on, e.g. `go.linkforty.com`.
@@ -35,9 +44,36 @@ interface LinkTableProps {
   ownHosts?: string[];
   selectedIds?: Set<string>;
   onSelectionChange?: (ids: Set<string>) => void;
+  /**
+   * Per-link results for a recent period, keyed by link id. When given, the
+   * table shows Installs, Conversions and Revenue columns after Clicks; a link
+   * without an entry shows dashes. Omit to hide the columns.
+   */
+  results?: Record<string, LinkResultFigures>;
+  /** Length of that period in days, shown in the column headers. Defaults to 30. */
+  resultsDays?: number;
+  /**
+   * The period the Clicks column covers, shown under its header in the same
+   * small type (e.g. "90 days"). Each link's `click_count` is whatever the host
+   * counted, which need not match `resultsDays`; saying so keeps a reader from
+   * comparing the columns across different periods. Omit to show no note.
+   */
+  clicksPeriod?: string;
 }
 
-export function LinkTable({ links, onInspect, onViewAnalytics, customDomain, ownHosts, selectedIds, onSelectionChange, defaultDomain }: LinkTableProps) {
+export function LinkTable({
+  links,
+  onInspect,
+  onViewAnalytics,
+  customDomain,
+  ownHosts,
+  selectedIds,
+  onSelectionChange,
+  defaultDomain,
+  results,
+  resultsDays = 30,
+  clicksPeriod,
+}: LinkTableProps) {
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const selectable = !!selectedIds && !!onSelectionChange;
 
@@ -110,9 +146,34 @@ export function LinkTable({ links, onInspect, onViewAnalytics, customDomain, own
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32">
                 Project
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-16">
-                Clicks
-              </th>
+              {clicksPeriod ? (
+                <th
+                  title={`Clicks, ${clicksPeriod}`}
+                  className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 w-16 whitespace-nowrap"
+                >
+                  <span className="block uppercase tracking-wider">Clicks</span>
+                  <span className="block text-[10px] font-normal normal-case text-gray-400 dark:text-gray-500">{clicksPeriod}</span>
+                </th>
+              ) : (
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-16">
+                  Clicks
+                </th>
+              )}
+              {results &&
+                [
+                  ['Installs', 'Installs'],
+                  ['Conv.', 'Conversions'],
+                  ['Revenue', 'Revenue'],
+                ].map(([label, full]) => (
+                  <th
+                    key={label}
+                    title={`${full}, last ${resultsDays} days`}
+                    className="px-2.5 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap"
+                  >
+                    <span className="block uppercase tracking-wider">{label}</span>
+                    <span className="block text-[10px] font-normal normal-case text-gray-400 dark:text-gray-500">{resultsDays} days</span>
+                  </th>
+                ))}
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24">
                 Created
               </th>
@@ -199,6 +260,7 @@ export function LinkTable({ links, onInspect, onViewAnalytics, customDomain, own
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {link.click_count || 0}
                   </td>
+                  {results && <ResultCells figures={results[link.id]} />}
                   <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">
                     {format(new Date(link.created_at), 'MMM d, yyyy')}
                   </td>
@@ -239,5 +301,28 @@ export function LinkTable({ links, onInspect, onViewAnalytics, customDomain, own
         </div>
       )}
     </div>
+  );
+}
+
+/** The three results cells for one link; dashes when the host has no figures for it. */
+function ResultCells({ figures }: { figures: LinkResultFigures | undefined }) {
+  const cell = 'px-2.5 py-3 whitespace-nowrap text-sm text-right tabular-nums';
+  if (!figures) {
+    return (
+      <>
+        {[0, 1, 2].map((i) => (
+          <td key={i} className={`${cell} text-gray-400`}>
+            —
+          </td>
+        ))}
+      </>
+    );
+  }
+  return (
+    <>
+      <td className={`${cell} text-gray-900 dark:text-white`}>{figures.newInstalls.toLocaleString()}</td>
+      <td className={`${cell} text-gray-900 dark:text-white`}>{figures.conversions.toLocaleString()}</td>
+      <td className={`${cell} text-gray-900 dark:text-white`}>{figures.revenueLabel}</td>
+    </>
   );
 }

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.0] - 2026-11-23
+
+### Added
+
+- `LinkTable` shows optional Installs, Conversions and Revenue columns for a recent period, after Clicks, when given `results` (per-link figures, keyed by link id) and `resultsDays` (the period's length, shown in the headers; 30 by default). A link without figures shows dashes. Without `results` the table is unchanged.
+- `LinkTable` takes an optional `clicksPeriod` (e.g. "90 days"), shown under the Clicks header in the same small type, so a host can say which period its click counts cover when they differ from `resultsDays`. Without it the header is unchanged.
+- The `LinkResultFigures` type is exported.
+
 ## [3.5.0] - 2026-11-15
 
 ### Added

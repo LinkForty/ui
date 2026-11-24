@@ -1,5 +1,6 @@
 // Components
 export { LinkTable } from './components/LinkTable';
+export type { LinkResultFigures } from './components/LinkTable';
 export { LinkDetail } from './components/LinkDetail';
 export type { LinkDetailProps, DiscoveredLink, LaunchpadLinkStats } from './components/LinkDetail';
 export { CreateLinkModal } from './components/CreateLinkModal';

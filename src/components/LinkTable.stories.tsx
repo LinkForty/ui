@@ -98,3 +98,16 @@ export const SingleLink: Story = {
     onDelete: (id) => console.log('Delete:', id),
   },
 };
+
+export const WithResults: Story = {
+  args: {
+    links: mockLinks,
+    resultsDays: 30,
+    clicksPeriod: '90 days',
+    // The last link has no figures, so it shows dashes.
+    results: {
+      '1': { newInstalls: 86, conversions: 31, revenueLabel: '$1,204.50' },
+      '2': { newInstalls: 12, conversions: 4, revenueLabel: '$300.00 + €40.00' },
+    },
+  },
+};
