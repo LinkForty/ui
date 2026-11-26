@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.1] - 2026-11-25
+
+### Fixed
+
+- `CreateLinkModal` and `EditLinkModal` use the LinkForty teal for their Create Link and Save Changes buttons, checkboxes, focus rings, selected targeting options, the "Hide Advanced Options" link, the Add Parameter button and the two callouts, in place of a fixed blue. Their Cancel buttons and unselected targeting options are transparent with a themed outline, and their dividers use the themed `border-themed` color, so both modals follow the host's color theme like their other surfaces.
+- The bundled stylesheet includes the `brand` color classes (`bg-brand`, `text-brand`, `border-brand` and their variants). `LinkDetail` uses them for the selected QR option, which had no background without them.
+- `EditLinkModal`'s Save Changes button and `LinkDetail`'s Download button use `bg-brand` in place of `btn-primary`, a class the bundled stylesheet doesn't define, so they have their teal background without a host stylesheet.
+- The bundled stylesheet defines `.border-themed`, with light and dark fallbacks when the host sets no `--color-popover-border`.
+- `LinkChannelField` (in both link modals) uses the teal focus ring.
+
 ## [3.6.0] - 2026-11-23
 
 ### Added

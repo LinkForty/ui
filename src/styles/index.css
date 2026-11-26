@@ -32,6 +32,10 @@
   .surface-table-header {
     background-color: var(--color-table-header-bg, #f9fafb);
   }
+  /* Dividers and outlines inside a .surface-popover panel. */
+  .border-themed {
+    border-color: var(--color-popover-border, #e5e7eb);
+  }
 
   @media (prefers-color-scheme: dark) {
     .surface-popover,
@@ -48,6 +52,9 @@
     }
     .surface-table-header {
       background-color: var(--color-table-header-bg, #111827);
+    }
+    .border-themed {
+      border-color: var(--color-popover-border, #4b5563);
     }
   }
 }

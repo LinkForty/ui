@@ -740,7 +740,7 @@ function QRSection({
           )}
           <button
             onClick={handleDownload}
-            className="inline-flex items-center gap-1.5 px-5 py-1.5 text-sm font-semibold text-white btn-primary rounded-lg"
+            className="inline-flex items-center gap-1.5 px-5 py-1.5 text-sm font-semibold text-white bg-brand hover:bg-brand-dark rounded-lg"
           >
             <Download className="h-4 w-4" />
             Download

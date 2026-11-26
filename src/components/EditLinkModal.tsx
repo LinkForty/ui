@@ -318,7 +318,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={handleClose} />
 
         <div className="surface-popover relative rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between p-6 border-b border-themed">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Edit Link</h3>
             <button
               onClick={handleClose}
@@ -343,7 +343,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                   <input
                     {...register('title')}
                     type="text"
-                    className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm"
                     placeholder="My Campaign Link"
                   />
                 </div>
@@ -353,7 +353,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                     <input
                       {...register('is_active')}
                       type="checkbox"
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-500 rounded bg-white dark:bg-gray-800 accent-blue-600 dark:accent-blue-500"
+                      className="h-4 w-4 text-brand focus:ring-brand border-gray-300 dark:border-gray-500 rounded bg-white dark:bg-gray-800 accent-brand"
                     />
                     <span className="ml-2 text-sm font-semibold text-gray-700 dark:text-gray-200">Active</span>
                   </label>
@@ -367,14 +367,14 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                 <textarea
                   {...register('description')}
                   rows={3}
-                  className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm"
                   placeholder="Optional description for this link"
                 />
               </div>
             </div>
 
             {/* Link Configuration Section */}
-            <div className="space-y-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="space-y-4 pt-6 border-t border-themed">
               <div>
                 <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Link Configuration</h3>
               </div>
@@ -402,7 +402,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                 </label>
                 <select
                   {...register('projectId')}
-                  className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm"
                 >
                   <option value="">No project</option>
                   {projects.map((project) => (
@@ -428,7 +428,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                   </label>
                   <select
                     {...register('domainId')}
-                    className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm"
                   >
                     <option value="">
                       Default ({domains.find(d => d.isDefault)?.domain || defaultDomain || DEFAULT_SHORTLINK_DOMAIN})
@@ -451,7 +451,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                 </label>
                 <select
                   {...register('attributionWindow')}
-                  className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm"
                 >
                   {installWindowOptions(linkInstallWindow).map((o) => (
                     <option key={o.value} value={o.value}>{o.label}</option>
@@ -467,7 +467,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                   <input
                     {...register('oneInstallPerClick')}
                     type="checkbox"
-                    className="mt-0.5 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-500 rounded bg-white dark:bg-gray-800 accent-blue-600 dark:accent-blue-500"
+                    className="mt-0.5 h-4 w-4 text-brand focus:ring-brand border-gray-300 dark:border-gray-500 rounded bg-white dark:bg-gray-800 accent-brand"
                   />
                   <span>
                     <span className="block text-sm font-semibold text-gray-700 dark:text-gray-200">
@@ -487,7 +487,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                 </label>
                 <select
                   {...register('eventAttributionWindowHours')}
-                  className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm"
                 >
                   <option value="">Use default (7 days)</option>
                   <option value="1">1 hour</option>
@@ -513,7 +513,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                 <input
                   {...register('expiresAt')}
                   type="datetime-local"
-                  className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm"
                 />
                 <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                   The link stops redirecting after this time — visitors see a "link expired" page instead. Clear the field to remove the expiration.
@@ -525,14 +525,14 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
               <button
                 type="button"
                 onClick={() => setShowAdvanced(!showAdvanced)}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
+                className="text-sm text-brand hover:text-brand-dark dark:hover:text-brand-light"
               >
                 {showAdvanced ? 'Hide' : 'Show'} Advanced Options
               </button>
             </div>
 
             {showAdvanced && (
-              <div className="space-y-8 pt-6 border-t-2 border-gray-200 dark:border-gray-700">
+              <div className="space-y-8 pt-6 border-t-2 border-themed">
                 {/* App Configuration Section */}
                 <div className="surface-sunken space-y-4 p-4 rounded-lg border">
                   <div>
@@ -547,7 +547,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                     <input
                       {...register('appScheme')}
                       type="text"
-                      className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono"
+                      className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm font-mono"
                       placeholder="myapp or com.company.app"
                     />
                     <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
@@ -573,7 +573,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                     <input
                       {...register('deepLinkPath')}
                       type="text"
-                      className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono"
+                      className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm font-mono"
                       placeholder="/product/123"
                     />
                     <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
@@ -592,7 +592,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                       <button
                         type="button"
                         onClick={addDeepLinkParam}
-                        className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-md transition-colors"
+                        className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-brand bg-brand/10 hover:bg-brand/20 dark:bg-brand/20 dark:hover:bg-brand/30 rounded-md transition-colors"
                       >
                         <Plus className="h-4 w-4 mr-1" />
                         Add Parameter
@@ -615,14 +615,14 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                               value={param.key}
                               onChange={(e) => updateDeepLinkParam(index, 'key', e.target.value)}
                               placeholder="Key (e.g., productId)"
-                              className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono"
+                              className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm font-mono"
                             />
                             <input
                               type="text"
                               value={param.value}
                               onChange={(e) => updateDeepLinkParam(index, 'value', e.target.value)}
                               placeholder="Value (e.g., 12345)"
-                              className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono"
+                              className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm font-mono"
                             />
                             <button
                               type="button"
@@ -654,7 +654,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                       <input
                         {...register('iosUniversalLink')}
                         type="url"
-                        className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm"
                         placeholder="https://yourdomain.com/link"
                       />
                       <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
@@ -672,7 +672,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                       <input
                         {...register('androidAppLink')}
                         type="url"
-                        className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm"
                         placeholder="https://yourdomain.com/link"
                       />
                       <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
@@ -686,7 +686,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                 </div>
 
                 {/* Link Type Toggle */}
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="bg-brand/5 dark:bg-brand/10 p-4 rounded-lg border border-brand/30">
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -698,7 +698,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                           setValue('customSchemeUrl', '');
                         }
                       }}
-                      className="h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-500 rounded focus:ring-blue-500 bg-white dark:bg-gray-800 accent-blue-600 dark:accent-blue-500"
+                      className="h-4 w-4 text-brand border-gray-300 dark:border-gray-500 rounded focus:ring-brand bg-white dark:bg-gray-800 accent-brand"
                     />
                     <span className="ml-3 text-sm font-medium text-gray-900 dark:text-white">
                       Use for push notifications (custom URL scheme)
@@ -724,7 +724,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                       <input
                         {...register('customSchemeUrl')}
                         type="text"
-                        className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm"
                         placeholder="myapp://path/to/content"
                       />
                       <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
@@ -746,13 +746,13 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
 
                   {/* Info banner when push notification mode is enabled */}
                   {usePushNotification && (
-                    <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                      <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                    <div className="flex items-start gap-3 p-3 bg-brand/5 dark:bg-brand/10 border border-brand/30 rounded-lg">
+                      <Info className="h-5 w-5 text-brand flex-shrink-0 mt-0.5" />
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-blue-900 dark:text-blue-200">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
                           Push notification deep links don't need app store redirects
                         </p>
-                        <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">
+                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
                           Push notification links only show to users with your app installed, so app store URLs are not needed.
                         </p>
                       </div>
@@ -768,7 +768,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                         {...register('iosAppStoreUrl')}
                         type="url"
                         disabled={usePushNotification}
-                        className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+                        className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm ${
                           usePushNotification
                             ? 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed placeholder-gray-400 dark:placeholder-gray-600'
                             : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500'
@@ -788,7 +788,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                         {...register('androidAppStoreUrl')}
                         type="url"
                         disabled={usePushNotification}
-                        className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+                        className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm ${
                           usePushNotification
                             ? 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed placeholder-gray-400 dark:placeholder-gray-600'
                             : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500'
@@ -809,7 +809,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                       {...register('webFallbackUrl')}
                       type="url"
                       disabled={usePushNotification}
-                      className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+                      className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm ${
                         usePushNotification
                           ? 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed placeholder-gray-400 dark:placeholder-gray-600'
                           : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500'
@@ -832,7 +832,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                         {...register('appendClickId')}
                         type="checkbox"
                         disabled={usePushNotification}
-                        className="mt-0.5 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-500 rounded bg-white dark:bg-gray-800 accent-blue-600 dark:accent-blue-500 disabled:cursor-not-allowed"
+                        className="mt-0.5 h-4 w-4 text-brand focus:ring-brand border-gray-300 dark:border-gray-500 rounded bg-white dark:bg-gray-800 accent-brand disabled:cursor-not-allowed"
                       />
                       <span>
                         <span className={`block text-sm font-semibold ${usePushNotification ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-200'}`}>
@@ -855,7 +855,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                     <select
                       id="edit-launchpad-mode"
                       {...register('launchpadMode')}
-                      className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="block w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm"
                     >
                       <option value="inherit">Workspace default</option>
                       <option value="on">Always show</option>
@@ -891,7 +891,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                       <input
                         {...register('utmSource')}
                         type="text"
-                        className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm"
                         placeholder="facebook"
                       />
                     </div>
@@ -903,7 +903,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                       <input
                         {...register('utmMedium')}
                         type="text"
-                        className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm"
                         placeholder="social"
                       />
                     </div>
@@ -915,7 +915,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                       <input
                         {...register('utmCampaign')}
                         type="text"
-                        className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm"
                         placeholder="summer_sale"
                       />
                     </div>
@@ -927,7 +927,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                       <input
                         {...register('utmTerm')}
                         type="text"
-                        className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm"
                         placeholder="keyword"
                       />
                     </div>
@@ -940,7 +940,7 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                     <input
                       {...register('utmContent')}
                       type="text"
-                      className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand/20 focus:border-brand sm:text-sm"
                       placeholder="banner_ad, text_link"
                     />
                   </div>
@@ -967,8 +967,8 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                         onClick={() => toggleCountry(country.code)}
                         className={`px-3 py-1 text-sm rounded-md border transition-colors ${
                           selectedCountries.includes(country.code)
-                            ? 'bg-blue-600 text-white border-blue-600 dark:bg-blue-500 dark:border-blue-500'
-                            : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                            ? 'bg-brand text-white border-brand'
+                            : 'bg-transparent text-gray-700 dark:text-gray-200 border-themed hover:border-brand/40 hover:bg-black/5 dark:hover:bg-white/5'
                         }`}
                       >
                         {country.name}
@@ -987,8 +987,8 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                       onClick={() => toggleDevice('ios')}
                       className={`px-4 py-2 text-sm rounded-md border transition-colors ${
                         selectedDevices.includes('ios')
-                          ? 'bg-blue-600 text-white border-blue-600 dark:bg-blue-500 dark:border-blue-500'
-                          : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                          ? 'bg-brand text-white border-brand'
+                          : 'bg-transparent text-gray-700 dark:text-gray-200 border-themed hover:border-brand/40 hover:bg-black/5 dark:hover:bg-white/5'
                       }`}
                     >
                       iOS
@@ -998,8 +998,8 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                       onClick={() => toggleDevice('android')}
                       className={`px-4 py-2 text-sm rounded-md border transition-colors ${
                         selectedDevices.includes('android')
-                          ? 'bg-blue-600 text-white border-blue-600 dark:bg-blue-500 dark:border-blue-500'
-                          : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                          ? 'bg-brand text-white border-brand'
+                          : 'bg-transparent text-gray-700 dark:text-gray-200 border-themed hover:border-brand/40 hover:bg-black/5 dark:hover:bg-white/5'
                       }`}
                     >
                       Android
@@ -1009,8 +1009,8 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                       onClick={() => toggleDevice('web')}
                       className={`px-4 py-2 text-sm rounded-md border transition-colors ${
                         selectedDevices.includes('web')
-                          ? 'bg-blue-600 text-white border-blue-600 dark:bg-blue-500 dark:border-blue-500'
-                          : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                          ? 'bg-brand text-white border-brand'
+                          : 'bg-transparent text-gray-700 dark:text-gray-200 border-themed hover:border-brand/40 hover:bg-black/5 dark:hover:bg-white/5'
                       }`}
                     >
                       Web
@@ -1030,8 +1030,8 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
                         onClick={() => toggleLanguage(language.code)}
                         className={`px-3 py-1 text-sm rounded-md border transition-colors ${
                           selectedLanguages.includes(language.code)
-                            ? 'bg-blue-600 text-white border-blue-600 dark:bg-blue-500 dark:border-blue-500'
-                            : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                            ? 'bg-brand text-white border-brand'
+                            : 'bg-transparent text-gray-700 dark:text-gray-200 border-themed hover:border-brand/40 hover:bg-black/5 dark:hover:bg-white/5'
                         }`}
                       >
                         {language.name}
@@ -1043,18 +1043,18 @@ export function EditLinkModal({ isOpen, onClose, onSubmit, link, isLoading, temp
               </div>
             )}
 
-            <div className="flex justify-end space-x-3 pt-8 border-t-2 border-gray-200 dark:border-gray-700">
+            <div className="flex justify-end space-x-3 pt-8 border-t-2 border-themed">
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-transparent hover:bg-black/5 dark:hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-brand/50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 disabled:opacity-50"
+                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-brand/50 disabled:opacity-50"
               >
                 {isLoading ? 'Saving...' : 'Save Changes'}
               </button>
